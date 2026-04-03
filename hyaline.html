@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百均新商品トラッカー</title>
+<style>
+  /* --- 全体デザイン --- */
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f0f4ff;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    color: #4CAF50;
+  }
+
+  /* --- 入力フォーム --- */
+  form {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    max-width: 500px;
+    margin: 0 auto 20px auto;
+  }
+  input, select, textarea, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+
+  /* --- 商品リスト --- */
+  .item-list {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .item {
+    background: #fff;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .item h3 {
+    margin: 0 0 5px 0;
+  }
+  .item p {
+    margin: 3px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>百均新商品トラッカー</h1>
+
+<form id="itemForm">
+  <input type="text" id="name" placeholder="商品名 *" required>
+  <input type="text" id="price" placeholder="価格 *" required>
+  <input type="text" id="store" placeholder="店舗名 *" required>
+  <select id="category" required>
+    <option value="">カテゴリ *</option>
+    <option value="文具">文具</option>
+    <option value="キッチン">キッチン</option>
+    <option value="生活雑貨">生活雑貨</option>
+    <option value="その他">その他</option>
+  </select>
+  <textarea id="memo" placeholder="メモ"></textarea>
+  <button type="submit">商品を追加</button>
+</form>
+
+<div class="item-list" id="itemList"></div>
+
+<script>
+  const form = document.getElementById('itemForm');
+  const itemList = document.getElementById('itemList');
+
+  // ローカルストレージから読み込み
+  let items = JSON.parse(localStorage.getItem('items')) || [];
+
+  function renderItems() {
+    itemList.innerHTML = '';
+    items.forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <h3>${item.name} - ${item.price}円</h3>
+        <p><strong>店舗:</strong> ${item.store}</p>
+        <p><strong>カテゴリ:</strong> ${item.category}</p>
+        <p>${item.memo}</p>
+        <button onclick="deleteItem(${index})">削除</button>
+      `;
+      itemList.appendChild(div);
+    });
+  }
+
+  function deleteItem(index) {
+    items.splice(index, 1);
+    localStorage.setItem('items', JSON.stringify(items));
+    renderItems();
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newItem = {
+      name: document.getElementById('name').value,
+      price: document.getElementById('price').value,
+      store: document.getElementById('store').value,
+      category: document.getElementById('category').value,
+      memo: document.getElementById('memo').value
+    };
+    items.push(newItem);
+    localStorage.setItem('items', JSON.stringify(items));
+    renderItems();
+    form.reset();
+  });
+
+  renderItems();
+</script>
+
+</body>
+</html>
