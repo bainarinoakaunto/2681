@@ -5,64 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>百均新商品トラッカー</title>
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f0f4ff;
-    margin: 0;
-    padding: 20px;
-    color: #333;
-  }
-  h1 {
-    text-align: center;
-    color: #4CAF50;
-  }
-  form, .search-container {
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    max-width: 600px;
-    margin: 0 auto 20px auto;
-  }
-  input, select, textarea, button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    margin-bottom: 12px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-  }
-  button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #45a049;
-  }
-  table {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-  }
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-  }
-  th {
-    background-color: #4CAF50;
-    color: white;
-  }
-  tr:last-child td {
-    border-bottom: none;
+  body { font-family: 'Helvetica', 'Arial', sans-serif; margin:20px; background:#f0f2f5; color:#333; }
+  h1 { text-align:center; color:#444; }
+  form { background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:20px; }
+  input, select, textarea, button { width:100%; margin:5px 0; padding:10px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box; }
+  button { background:#4CAF50; color:#fff; border:none; font-weight:bold; }
+  button:hover { background:#45a049; }
+  .search-filter { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+  .search-filter input, .search-filter select, .search-filter button { flex:1; min-width:120px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); display:block; overflow-x:auto; }
+  th, td { border-bottom:1px solid #eee; padding:10px; text-align:left; white-space:nowrap; }
+  th { background:#f7f7f7; }
+  td button { background:#2196F3; margin-left:5px; padding:5px 8px; font-size:0.9em; }
+  td button:hover { background:#1976D2; }
+  @media (max-width:600px) {
+    th, td { font-size:14px; padding:8px; }
+    input, select, textarea, button { font-size:14px; }
   }
 </style>
 </head>
@@ -71,127 +29,125 @@
 <h1>百均新商品トラッカー</h1>
 
 <form id="itemForm">
-  <input type="text" id="name" placeholder="商品名 *" required>
-  <input type="text" id="price" placeholder="価格 *" required>
-  <input type="text" id="store" placeholder="店舗名 *" required>
-  <select id="category" required>
-    <option value="">カテゴリ *</option>
-    <option value="文具">文具</option>
-    <option value="キッチン">キッチン</option>
-    <option value="生活雑貨">生活雑貨</option>
-    <option value="その他">その他</option>
-  </select>
+  <input type="text" id="name" placeholder="商品名*" required>
+  <input type="text" id="price" placeholder="価格*" required>
+  <input type="text" id="store" placeholder="店舗名*" required>
+  <input type="text" id="category" placeholder="カテゴリ*" required>
   <textarea id="memo" placeholder="メモ"></textarea>
   <button type="submit">商品を追加</button>
 </form>
 
-<div class="search-container">
-  <input type="text" id="searchInput" placeholder="検索: 商品名・店舗名・メモなど">
+<div class="search-filter">
+  <input type="text" id="searchText" placeholder="商品名・店舗・メモで検索">
   <select id="categoryFilter">
-    <option value="">全てのカテゴリ</option>
-    <option value="文具">文具</option>
-    <option value="キッチン">キッチン</option>
-    <option value="生活雑貨">生活雑貨</option>
-    <option value="その他">その他</option>
+    <option value="">カテゴリで絞り込み</option>
   </select>
-</div>
-
-<div style="text-align:center; margin-bottom:10px;">
   <button onclick="downloadCSV()">CSVでダウンロード</button>
 </div>
 
-<table id="itemTable">
+<table>
   <thead>
     <tr>
-      <th>記録時間</th>
+      <th>登録時間</th>
       <th>商品名</th>
       <th>価格</th>
       <th>店舗名</th>
       <th>カテゴリ</th>
       <th>メモ</th>
-      <th>削除</th>
+      <th>操作</th>
     </tr>
   </thead>
-  <tbody></tbody>
+  <tbody id="tableBody"></tbody>
 </table>
 
 <script>
+let items = [];
+
 const form = document.getElementById('itemForm');
-const tableBody = document.querySelector('#itemTable tbody');
-const searchInput = document.getElementById('searchInput');
-const categoryFilter = document.getElementById('categoryFilter');
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('name').value;
+  const price = document.getElementById('price').value;
+  const store = document.getElementById('store').value;
+  const category = document.getElementById('category').value;
+  const memo = document.getElementById('memo').value;
+  const time = new Date().toLocaleString();
 
-let items = JSON.parse(localStorage.getItem('items')) || [];
+  items.push({name, price, store, category, memo, time});
+  updateCategoryFilter();
+  renderTable();
+  form.reset();
+});
 
-function renderItems() {
-  tableBody.innerHTML = '';
-  const filterText = searchInput.value.toLowerCase();
-  const selectedCategory = categoryFilter.value;
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  const searchText = document.getElementById('searchText').value.toLowerCase();
+  const categoryFilter = document.getElementById('categoryFilter').value;
+
   const filteredItems = items.filter(item => {
-    const text = `${item.time} ${item.name} ${item.price} ${item.store} ${item.memo}`.toLowerCase();
-    const matchesCategory = selectedCategory === '' || item.category === selectedCategory;
-    return text.includes(filterText) && matchesCategory;
+    const matchesText = item.name.toLowerCase().includes(searchText) ||
+                        item.store.toLowerCase().includes(searchText) ||
+                        item.memo.toLowerCase().includes(searchText);
+    const matchesCategory = categoryFilter === '' || item.category === categoryFilter;
+    return matchesText && matchesCategory;
   });
+
   filteredItems.forEach((item, index) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${item.time}</td>
-      <td>${item.name}</td>
+      <td>${item.name} <button onclick="googleSearch('${item.name}')">🔍</button></td>
       <td>${item.price}</td>
       <td>${item.store}</td>
       <td>${item.category}</td>
       <td>${item.memo}</td>
       <td><button onclick="deleteItem(${index})">削除</button></td>
     `;
-    tableBody.appendChild(tr);
+    tbody.appendChild(tr);
   });
 }
+
+function updateCategoryFilter() {
+  const select = document.getElementById('categoryFilter');
+  const categories = [...new Set(items.map(item => item.category))];
+  select.innerHTML = '<option value="">カテゴリで絞り込み</option>';
+  categories.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    select.appendChild(option);
+  });
+}
+
+document.getElementById('searchText').addEventListener('input', renderTable);
+document.getElementById('categoryFilter').addEventListener('change', renderTable);
 
 function deleteItem(index) {
-  items.splice(index, 1);
-  localStorage.setItem('items', JSON.stringify(items));
-  renderItems();
+  if(confirm('本当に削除しますか？')) {
+    items.splice(index, 1);
+    updateCategoryFilter();
+    renderTable();
+  }
 }
 
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  const now = new Date();
-  const newItem = {
-    time: now.toLocaleString(),
-    name: document.getElementById('name').value,
-    price: document.getElementById('price').value,
-    store: document.getElementById('store').value,
-    category: document.getElementById('category').value,
-    memo: document.getElementById('memo').value
-  };
-  items.push(newItem);
-  localStorage.setItem('items', JSON.stringify(items));
-  form.reset();
-  renderItems();
-});
-
-searchInput.addEventListener('input', renderItems);
-categoryFilter.addEventListener('change', renderItems);
+function googleSearch(query) {
+  const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  window.open(url, '_blank');
+}
 
 function downloadCSV() {
-  if (items.length === 0) return alert('データがありません。');
-  let csv = '記録時間,商品名,価格,店舗名,カテゴリ,メモ\n';
+  let csv = '登録時間,商品名,価格,店舗名,カテゴリ,メモ\n';
   items.forEach(item => {
-    const row = [item.time, item.name, item.price, item.store, item.category, item.memo]
-      .map(v => `"${v.replace(/"/g,'""')}"`) 
-      .join(',');
-    csv += row + '\n';
+    csv += `"${item.time}","${item.name}","${item.price}","${item.store}","${item.category}","${item.memo}"\n`;
   });
   const blob = new Blob([csv], {type: 'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = '百均新商品トラッカー.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '商品トラッカー.csv';
+  link.click();
 }
-
-renderItems();
 </script>
 
 </body>
