@@ -3,72 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百均トラッカー（自動入力対応）</title>
+<title>百均新商品トラッカー（バーコード対応）</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 body {
-  font-family: sans-serif;
-  background: #f0f4ff;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0f4ff;
+  margin: 0;
   padding: 20px;
+  color: #333;
 }
 h1 { text-align: center; color: #4CAF50; }
 
-form {
-  background: white;
+form, .search-container {
+  background: #fff;
   padding: 15px;
   border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
   max-width: 600px;
-  margin: auto;
+  margin: 0 auto 20px auto;
 }
 
-input, select, button {
+input, select, textarea, button {
   width: 100%;
   padding: 10px;
   margin-top: 8px;
+  margin-bottom: 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 button {
-  background: #4CAF50;
+  background-color: #4CAF50;
   color: white;
   border: none;
 }
 
-#preview {
+video {
   width: 100%;
-  margin-top: 10px;
+  display: none;
+  border-radius: 10px;
 }
+
+table {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+th { background-color: #4CAF50; color: white; }
 </style>
 </head>
 
 <body>
 
-<h1>百均トラッカー（神機能版）</h1>
+<h1>百均新商品トラッカー</h1>
 
 <form id="itemForm">
-  <input type="text" id="name" placeholder="商品名（自動入力）">
-  <input type="text" id="price" placeholder="価格">
-  <input type="text" id="store" placeholder="店舗">
+  <input type="text" id="name" placeholder="商品名 *" required>
+  <input type="text" id="price" placeholder="価格 *" required>
+  <input type="text" id="store" placeholder="店舗名 *" required>
 
   <input type="text" id="jan" placeholder="JANコード">
-  <button type="button" onclick="startScanner()">📷 スキャン</button>
+  <button type="button" onclick="startScanner()">📷 バーコード読み取り</button>
 
   <div id="preview"></div>
 
-  <select id="category">
-    <option value="">カテゴリ</option>
-    <option>文具</option>
-    <option>キッチン</option>
-    <option>生活雑貨</option>
+  <select id="category" required>
+    <option value="">カテゴリ *</option>
+    <option value="文具">文具</option>
+    <option value="キッチン">キッチン</option>
+    <option value="生活雑貨">生活雑貨</option>
+    <option value="その他">その他</option>
   </select>
 
-  <button type="submit">保存</button>
+  <textarea id="memo" placeholder="メモ"></textarea>
+  <button type="submit">商品を追加</button>
 </form>
 
+<div class="search-container">
+  <input type="text" id="searchInput" placeholder="検索">
+</div>
+
+<table id="itemTable">
+<thead>
+<tr>
+<th>時間</th>
+<th>商品名</th>
+<th>価格</th>
+<th>店舗</th>
+<th>JAN</th>
+<th>カテゴリ</th>
+<th>削除</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
 <script>
+const form = document.getElementById('itemForm');
+const tableBody = document.querySelector('#itemTable tbody');
+const searchInput = document.getElementById('searchInput');
+
+let items = JSON.parse(localStorage.getItem('items')) || [];
 let scanner;
 
+function renderItems() {
+  tableBody.innerHTML = '';
+  const text = searchInput.value.toLowerCase();
+
+  items.forEach((item, index) => {
+    if (!JSON.stringify(item).toLowerCase().includes(text)) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.time}</td>
+      <td>${item.name}</td>
+      <td>${item.price}</td>
+      <td>${item.store}</td>
+      <td>${item.jan || ''}</td>
+      <td>${item.category}</td>
+      <td><button onclick="deleteItem(${index})">削除</button></td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+function deleteItem(index) {
+  items.splice(index, 1);
+  localStorage.setItem('items', JSON.stringify(items));
+  renderItems();
+}
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+
+  const newItem = {
+    time: new Date().toLocaleString(),
+    name: document.getElementById('name').value,
+    price: document.getElementById('price').value,
+    store: document.getElementById('store').value,
+    jan: document.getElementById('jan').value,
+    category: document.getElementById('category').value
+  };
+
+  items.push(newItem);
+  localStorage.setItem('items', JSON.stringify(items));
+  form.reset();
+  renderItems();
+});
+
+searchInput.addEventListener('input', renderItems);
+
+// 📷 バーコード読み取り
 function startScanner() {
   scanner = new Html5Qrcode("preview");
 
@@ -76,47 +172,17 @@ function startScanner() {
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
     (decodedText) => {
-      document.getElementById("jan").value = decodedText;
-
-      // ⭐ 商品名取得
-      fetchProduct(decodedText);
-
-      scanner.stop();
+      document.getElementById('jan').value = decodedText;
+      stopScanner();
     }
   );
 }
 
-// ⭐ 楽天APIで商品取得
-async function fetchProduct(jan) {
-  const APP_ID = "YOUR_APP_ID"; // ←ここ変更
-
-  const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?format=json&applicationId=${APP_ID}&keyword=${jan}`;
-
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.Items.length > 0) {
-      const item = data.Items[0].Item;
-
-      document.getElementById("name").value = item.itemName;
-
-      // 価格も入れたい場合
-      document.getElementById("price").value = item.itemPrice;
-    } else {
-      alert("商品見つからず（100均はヒットしないことあり）");
-    }
-
-  } catch (e) {
-    alert("取得エラー");
-  }
+function stopScanner() {
+  if (scanner) scanner.stop();
 }
 
-// 保存（簡易）
-document.getElementById("itemForm").addEventListener("submit", e => {
-  e.preventDefault();
-  alert("保存OK（ここは自由に拡張できる）");
-});
+renderItems();
 </script>
 
 </body>
