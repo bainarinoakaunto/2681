@@ -3,127 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百均商品トラッカー</title>
+<title>CSVそのまま表示</title>
 <style>
-body { font-family: sans-serif; padding: 10px; background: #f4f4f4; }
-h1 { text-align: center; font-size: 20px; margin-bottom: 10px; }
-input { width: 100%; padding: 10px; margin-bottom: 8px; box-sizing: border-box; }
-.buttons { display: flex; overflow-x: auto; margin-bottom: 10px; }
-button { flex: none; margin-right: 5px; padding: 8px 10px; border: none; border-radius: 8px; background: #ddd; }
-button.active { background: #4CAF50; color: white; }
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; background: white; }
-th, td { border-bottom: 1px solid #ddd; padding: 6px; font-size: 14px; }
-.total { text-align: right; margin-top: 10px; font-weight: bold; font-size: 16px; }
+body { font-family: monospace; padding: 10px; background: #f4f4f4; }
+pre { background: white; padding: 10px; border-radius: 5px; overflow-x: auto; }
 </style>
 </head>
 <body>
 
-<h1>百均商品トラッカー</h1>
-
-<input type="text" id="search" placeholder="検索">
-<input type="date" id="dateFilter">
-
-<div class="buttons">
-<button onclick="setCategory('')" class="active">すべて</button>
-<button onclick="setCategory('文具')">文具</button>
-<button onclick="setCategory('生活雑貨')">生活雑貨</button>
-<button onclick="setCategory('その他')">その他</button>
-</div>
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>日付</th>
-<th>時間</th>
-<th>商品</th>
-<th>価格</th>
-<th>店舗</th>
-<th>カテゴリ</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-
-<div class="total" id="total"></div>
+<h1>CSVファイル内容</h1>
+<pre id="csvContent">読み込み中…</pre>
 
 <script>
-let data = [];
-let currentCategory = "";
+// CSV ファイル名（同じフォルダに配置）
+const csvFile = "./情報.csv";
 
-const tbody = document.getElementById("tableBody");
-const totalDiv = document.getElementById("total");
-
-// 価格文字列を数値化
-function parsePrice(str) {
-    return Number(str.replace(/[¥円,]/g,"")) || 0;
-}
-
-// 同じディレクトリの CSV を読み込む
-fetch("./情報.csv")
-.then(res => res.text())
-.then(text => {
-    const lines = text.trim().split("\n");
-    data = lines.slice(1).map(line => {
-        const cols = line.split("\t"); // タブ区切り
-        const datetime = cols[0] || "";
-        const [date, time] = datetime.split(" ");
-        return {
-            date: date ? date.replace(/\//g, "-") : "",
-            time: time || "",
-            name: cols[1] || "",
-            price: parsePrice(cols[2] || "0"),
-            store: cols[3] || "",
-            category: cols[4] || ""
-        };
-    });
-    render();
-})
-.catch(err => console.error("CSV読み込みエラー:", err));
-
-// 表示処理
-function render() {
-    const keyword = document.getElementById("search").value.toLowerCase();
-    const selectedDate = document.getElementById("dateFilter").value;
-
-    tbody.innerHTML = "";
-    let total = 0;
-
-    data.forEach(item => {
-        if (!item.name) return;
-        const text = (item.name + item.store + item.category).toLowerCase();
-        if (selectedDate && item.date !== selectedDate) return;
-        if (currentCategory && item.category !== currentCategory) return;
-        if (!text.includes(keyword)) return;
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${item.date}</td>
-            <td>${item.time}</td>
-            <td>${item.name}</td>
-            <td>¥${item.price}</td>
-            <td>${item.store}</td>
-            <td>${item.category}</td>
-        </tr>`;
-        total += item.price;
-    });
-
-    totalDiv.innerText = "合計: ¥" + total;
-}
-
-// カテゴリボタン
-function setCategory(cat) {
-    currentCategory = cat;
-    document.querySelectorAll(".buttons button").forEach(btn => btn.classList.remove("active"));
-    event.target.classList.add("active");
-    render();
-}
-
-// イベント
-document.getElementById("search").addEventListener("input", render);
-document.getElementById("dateFilter").addEventListener("change", render);
+fetch(csvFile)
+  .then(res => res.text())
+  .then(text => {
+    document.getElementById("csvContent").innerText = text;
+  })
+  .catch(err => {
+    document.getElementById("csvContent").innerText = "CSV読み込みエラー: " + err;
+  });
 </script>
 
 </body>
