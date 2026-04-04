@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百均商品トラッカー（CSV対応）</title>
+<title>百均商品トラッカー（完全対応）</title>
 
 <style>
 body {
@@ -14,10 +14,10 @@ body {
 h1 {
     text-align: center;
 }
-input, button {
-    margin: 5px 0;
-    padding: 10px;
+input {
     width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
 }
 .table-wrap {
     overflow-x: auto;
@@ -43,8 +43,7 @@ th, td {
 
 <h1>百均商品トラッカー</h1>
 
-<input type="file" id="fileInput" accept=".csv">
-
+<input type="file" id="fileInput" accept=".csv,.txt">
 <input type="text" id="search" placeholder="検索">
 <input type="date" id="dateFilter">
 
@@ -56,6 +55,7 @@ th, td {
 <th>時間</th>
 <th>商品</th>
 <th>価格</th>
+<th>店舗</th>
 <th>カテゴリ</th>
 </tr>
 </thead>
@@ -71,23 +71,33 @@ let data = [];
 const tbody = document.getElementById("tableBody");
 const totalDiv = document.getElementById("total");
 
-// CSV読み込み
+// 価格変換（円・カンマ対応）
+function parsePrice(str) {
+    return Number(str.replace(/[¥円,]/g, ""));
+}
+
+// CSV/TSV読み込み
 document.getElementById("fileInput").addEventListener("change", function(e) {
     const file = e.target.files[0];
     const reader = new FileReader();
 
     reader.onload = function(event) {
-        const text = event.target.result;
+        const text = event.target.result.trim();
         const lines = text.split("\n");
 
         data = lines.slice(1).map(line => {
-            const [date, time, name, price, category] = line.split(",");
+            const cols = line.split("\t"); // タブ区切り
+
+            const datetime = cols[0];
+            const [date, time] = datetime.split(" ");
+
             return {
-                date: date,
+                date: date.replace(/\//g, "-"),
                 time: time,
-                name: name,
-                price: Number(price),
-                category: category
+                name: cols[1],
+                price: parsePrice(cols[2]),
+                store: cols[3],
+                category: cols[4]
             };
         });
 
@@ -108,7 +118,7 @@ function render() {
     data.forEach(item => {
         if (!item.name) return;
 
-        const text = (item.name + item.category).toLowerCase();
+        const text = (item.name + item.store + item.category).toLowerCase();
 
         if (selectedDate && item.date !== selectedDate) return;
         if (!text.includes(keyword)) return;
@@ -118,7 +128,8 @@ function render() {
             <td>${item.date}</td>
             <td>${item.time}</td>
             <td>${item.name}</td>
-            <td>${item.price}</td>
+            <td>¥${item.price}</td>
+            <td>${item.store}</td>
             <td>${item.category}</td>
         </tr>`;
         tbody.innerHTML += row;
