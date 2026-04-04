@@ -3,19 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CSV表表示</title>
+<title>CSV表表示（見やすく）</title>
 <style>
 body { font-family: sans-serif; padding: 10px; background: #f4f4f4; }
-h1 { text-align: center; font-size: 20px; margin-bottom: 10px; }
+h1 { text-align: center; font-size: 22px; margin-bottom: 10px; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; background: white; }
-th, td { border: 1px solid #ccc; padding: 6px; text-align: left; font-size: 14px; }
-th { background: #eee; }
+th, td { border: 1px solid #ccc; padding: 8px; font-size: 14px; }
+th { background-color: #4CAF50; color: white; position: sticky; top: 0; }
+tr:nth-child(even) { background-color: #f9f9f9; }
+td.price { text-align: right; }
+.total { margin-top: 10px; font-weight: bold; font-size: 16px; text-align: right; }
 </style>
 </head>
 <body>
 
-<h1>CSV 表示</h1>
+<h1>CSV 表示（見やすく）</h1>
+
 <div class="table-wrap">
 <table id="csvTable">
 <thead></thead>
@@ -23,8 +27,10 @@ th { background: #eee; }
 </table>
 </div>
 
+<div class="total" id="total">合計: ¥0</div>
+
 <script>
-const csvFile = "./情報.csv"; // 同じフォルダに CSV を置く
+const csvFile = "./情報.csv"; // CSVファイルを同じフォルダに置く
 
 fetch(csvFile)
   .then(res => res.text())
@@ -39,10 +45,15 @@ fetch(csvFile)
     
     // 本文
     const tbody = table.querySelector("tbody");
+    let total = 0;
     lines.slice(1).forEach(line => {
       const cols = line.split("\t");
-      tbody.innerHTML += "<tr>" + cols.map(c => `<td>${c}</td>`).join("") + "</tr>";
+      const price = cols[2] ? Number(cols[2].replace(/[¥円,]/g,"")) : 0;
+      total += price;
+      tbody.innerHTML += "<tr>" + cols.map((c,i) => i===2 ? `<td class='price'>¥${price}</td>` : `<td>${c}</td>`).join("") + "</tr>";
     });
+    
+    document.getElementById("total").innerText = "合計: ¥" + total;
   })
   .catch(err => console.error("CSV読み込みエラー:", err));
 </script>
