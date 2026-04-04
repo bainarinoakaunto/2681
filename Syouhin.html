@@ -3,49 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百均商品トラッカー（完全対応）</title>
-
+<title>百均商品トラッカー</title>
 <style>
-body {
-    font-family: sans-serif;
-    padding: 10px;
-    background: #f4f4f4;
-}
-h1 {
-    text-align: center;
-}
-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 8px;
-}
-.table-wrap {
-    overflow-x: auto;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-th, td {
-    border-bottom: 1px solid #ddd;
-    padding: 6px;
-}
-.total {
-    text-align: right;
-    margin-top: 10px;
-    font-weight: bold;
-}
+body { font-family: sans-serif; padding: 10px; background: #f4f4f4; }
+h1 { text-align: center; font-size: 20px; margin-bottom: 10px; }
+input { width: 100%; padding: 10px; margin-bottom: 8px; box-sizing: border-box; }
+.buttons { display: flex; overflow-x: auto; margin-bottom: 10px; }
+button { flex: none; margin-right: 5px; padding: 8px 10px; border: none; border-radius: 8px; background: #ddd; }
+button.active { background: #4CAF50; color: white; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: white; }
+th, td { border-bottom: 1px solid #ddd; padding: 6px; font-size: 14px; }
+.total { text-align: right; margin-top: 10px; font-weight: bold; font-size: 16px; }
 </style>
 </head>
-
 <body>
 
 <h1>百均商品トラッカー</h1>
 
-<input type="file" id="fileInput" accept=".csv,.txt">
 <input type="text" id="search" placeholder="検索">
 <input type="date" id="dateFilter">
+
+<div class="buttons">
+<button onclick="setCategory('')" class="active">すべて</button>
+<button onclick="setCategory('文具')">文具</button>
+<button onclick="setCategory('生活雑貨')">生活雑貨</button>
+<button onclick="setCategory('その他')">その他</button>
+</div>
 
 <div class="table-wrap">
 <table>
@@ -67,6 +51,7 @@ th, td {
 
 <script>
 let data = [];
+let currentCategory = "";
 
 const tbody = document.getElementById("tableBody");
 const totalDiv = document.getElementById("total");
@@ -76,38 +61,29 @@ function parsePrice(str) {
     return Number(str.replace(/[¥円,]/g, ""));
 }
 
-// CSV/TSV読み込み
-document.getElementById("fileInput").addEventListener("change", function(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
+// サーバー内 CSV 読み込み
+fetch('情報.csv')
+.then(response => response.text())
+.then(text => {
+    const lines = text.trim().split("\n");
+    data = lines.slice(1).map(line => {
+        const cols = line.split("\t"); // タブ区切り
+        const datetime = cols[0] || "";
+        const [date, time] = datetime.split(" ");
+        return {
+            date: date ? date.replace(/\//g, "-") : "",
+            time: time || "",
+            name: cols[1] || "",
+            price: parsePrice(cols[2] || "0"),
+            store: cols[3] || "",
+            category: cols[4] || ""
+        };
+    });
+    render();
+})
+.catch(err => console.error("読み込みエラー:", err));
 
-    reader.onload = function(event) {
-        const text = event.target.result.trim();
-        const lines = text.split("\n");
-
-        data = lines.slice(1).map(line => {
-            const cols = line.split("\t"); // タブ区切り
-
-            const datetime = cols[0];
-            const [date, time] = datetime.split(" ");
-
-            return {
-                date: date.replace(/\//g, "-"),
-                time: time,
-                name: cols[1],
-                price: parsePrice(cols[2]),
-                store: cols[3],
-                category: cols[4]
-            };
-        });
-
-        render();
-    };
-
-    reader.readAsText(file);
-});
-
-// 表示
+// 表示処理
 function render() {
     const keyword = document.getElementById("search").value.toLowerCase();
     const selectedDate = document.getElementById("dateFilter").value;
@@ -117,13 +93,12 @@ function render() {
 
     data.forEach(item => {
         if (!item.name) return;
-
         const text = (item.name + item.store + item.category).toLowerCase();
-
         if (selectedDate && item.date !== selectedDate) return;
+        if (currentCategory && item.category !== currentCategory) return;
         if (!text.includes(keyword)) return;
 
-        const row = `
+        tbody.innerHTML += `
         <tr>
             <td>${item.date}</td>
             <td>${item.time}</td>
@@ -132,13 +107,21 @@ function render() {
             <td>${item.store}</td>
             <td>${item.category}</td>
         </tr>`;
-        tbody.innerHTML += row;
         total += item.price;
     });
 
     totalDiv.innerText = "合計: ¥" + total;
 }
 
+// カテゴリボタン
+function setCategory(cat) {
+    currentCategory = cat;
+    document.querySelectorAll(".buttons button").forEach(btn => btn.classList.remove("active"));
+    event.target.classList.add("active");
+    render();
+}
+
+// イベント
 document.getElementById("search").addEventListener("input", render);
 document.getElementById("dateFilter").addEventListener("change", render);
 </script>
