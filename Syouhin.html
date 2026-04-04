@@ -56,14 +56,14 @@ let currentCategory = "";
 const tbody = document.getElementById("tableBody");
 const totalDiv = document.getElementById("total");
 
-// 価格変換（円・カンマ対応）
+// 価格文字列を数値化
 function parsePrice(str) {
-    return Number(str.replace(/[¥円,]/g, ""));
+    return Number(str.replace(/[¥円,]/g,"")) || 0;
 }
 
-// サーバー内 CSV 読み込み
-fetch('情報.csv')
-.then(response => response.text())
+// 同じディレクトリの CSV を読み込む
+fetch("./情報.csv")
+.then(res => res.text())
 .then(text => {
     const lines = text.trim().split("\n");
     data = lines.slice(1).map(line => {
@@ -81,7 +81,7 @@ fetch('情報.csv')
     });
     render();
 })
-.catch(err => console.error("読み込みエラー:", err));
+.catch(err => console.error("CSV読み込みエラー:", err));
 
 // 表示処理
 function render() {
