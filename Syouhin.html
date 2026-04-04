@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>百均商品トラッカー（カテゴリ対応）</title>
+<style>
+body {
+    font-family: sans-serif;
+    background: #f4f4f4;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+.buttons {
+    margin-bottom: 15px;
+}
+button {
+    margin: 3px;
+    padding: 8px 12px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+}
+button.active {
+    background: #4CAF50;
+    color: white;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+th {
+    background: #4CAF50;
+    color: white;
+}
+tr:nth-child(even) {
+    background: #f9f9f9;
+}
+.total {
+    margin-top: 15px;
+    text-align: right;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h1>百均商品トラッカー</h1>
+
+<input type="text" id="search" placeholder="検索（商品・店舗など）">
+
+<div class="buttons">
+<button onclick="setCategory('')" class="active">すべて</button>
+<button onclick="setCategory('文具')">文具</button>
+<button onclick="setCategory('生活雑貨')">生活雑貨</button>
+<button onclick="setCategory('その他')">その他</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>記録時間</th>
+<th>商品名</th>
+<th>価格</th>
+<th>店舗名</th>
+<th>カテゴリ</th>
+<th>メモ</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<div class="total" id="total"></div>
+
+<script>
+const data = [
+{time:"2026/4/4 7:37:40", name:"オリズルラン", price:110, store:"ダイソー", category:"その他", memo:""},
+{time:"2026/4/4 7:41:29", name:"くす玉", price:110, store:"ダイソー", category:"その他", memo:""},
+{time:"2026/4/4 7:42:51", name:"テープライトLED 3m", price:330, store:"ダイソー", category:"その他", memo:""},
+{time:"2026/4/4 7:44:39", name:"テープライト5m", price:550, store:"ダイソー", category:"その他", memo:""},
+{time:"2026/4/4 7:45:39", name:"小型ハサミ", price:110, store:"ダイソー", category:"文具", memo:""},
+{time:"2026/4/4 7:46:48", name:"紙せっけん", price:110, store:"ダイソー", category:"生活雑貨", memo:""},
+{time:"2026/4/4 8:42:09", name:"インクジェット紙 厚紙(A4)", price:110, store:"ダイソー", category:"その他", memo:""},
+{time:"2026/4/4 10:03:38", name:"紛失防止タグ(GPS Apple用)", price:1000, store:"ダイソー", category:"その他", memo:""},
+{time:"2026/4/4 14:51:03", name:"ボイスコントロールライト", price:330, store:"ダイソー", category:"その他", memo:""}
+];
+
+let currentCategory = "";
+
+const tbody = document.getElementById("tableBody");
+const totalDiv = document.getElementById("total");
+
+function render() {
+    const keyword = document.getElementById("search").value.toLowerCase();
+    tbody.innerHTML = "";
+    let total = 0;
+
+    data.forEach(item => {
+        const text = (item.name + item.store + item.category).toLowerCase();
+
+        if (!text.includes(keyword)) return;
+        if (currentCategory && item.category !== currentCategory) return;
+
+        const row = `
+        <tr>
+            <td>${item.time}</td>
+            <td>${item.name}</td>
+            <td>¥${item.price}</td>
+            <td>${item.store}</td>
+            <td>${item.category}</td>
+            <td>${item.memo}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+        total += item.price;
+    });
+
+    totalDiv.innerText = "表示中の合計: ¥" + total;
+}
+
+function setCategory(cat) {
+    currentCategory = cat;
+
+    document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+    event.target.classList.add("active");
+
+    render();
+}
+
+// 初期表示
+render();
+
+// 検索イベント
+document.getElementById("search").addEventListener("input", render);
+</script>
+
+</body>
+</html>
