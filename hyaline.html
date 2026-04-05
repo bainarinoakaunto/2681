@@ -41,12 +41,6 @@ button {
   border: none;
 }
 
-video {
-  width: 100%;
-  display: none;
-  border-radius: 10px;
-}
-
 table {
   width: 100%;
   max-width: 900px;
@@ -87,11 +81,13 @@ th { background-color: #4CAF50; color: white; }
   </select>
 
   <textarea id="memo" placeholder="メモ"></textarea>
+
   <button type="submit">商品を追加</button>
 </form>
 
 <div class="search-container">
   <input type="text" id="searchInput" placeholder="検索">
+  <button onclick="exportCSV()">📁 CSVエクスポート</button>
 </div>
 
 <table id="itemTable">
@@ -164,7 +160,7 @@ form.addEventListener('submit', e => {
 
 searchInput.addEventListener('input', renderItems);
 
-// 📷 バーコード読み取り
+// 📷 バーコード
 function startScanner() {
   scanner = new Html5Qrcode("preview");
 
@@ -180,6 +176,36 @@ function startScanner() {
 
 function stopScanner() {
   if (scanner) scanner.stop();
+}
+
+// 📁 CSVエクスポート
+function exportCSV() {
+  if (items.length === 0) {
+    alert("データがありません");
+    return;
+  }
+
+  const header = ["時間","商品名","価格","店舗","JAN","カテゴリ"];
+
+  const rows = items.map(item => [
+    item.time,
+    item.name,
+    item.price,
+    item.store,
+    item.jan || "",
+    item.category
+  ]);
+
+  const csvContent = [header, ...rows]
+    .map(e => e.map(v => `"${v}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv" });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `items_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
 }
 
 renderItems();
