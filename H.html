@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>商品一覧</title>
+<style>
+body { font-family: sans-serif; padding: 10px; }
+
+input {
+  padding: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #444;
+  padding: 6px;
+}
+
+th {
+  background: #ddd;
+}
+</style>
+</head>
+<body>
+
+<h2>📊 商品一覧</h2>
+
+<input type="text" id="search" placeholder="検索（商品名・カテゴリなど）">
+
+<table id="table"></table>
+
+<script>
+let data = [];
+
+fetch("items_2026-04-06.csv")
+.then(res => res.text())
+.then(text => {
+  const rows = text.trim().split("\n");
+
+  data = rows.map(r => r.split(","));
+  render(data);
+});
+
+// 表描画
+function render(rows) {
+  const table = document.getElementById("table");
+  table.innerHTML = "";
+
+  rows.forEach((cols, i) => {
+    const tr = document.createElement("tr");
+
+    cols.forEach(col => {
+      const cell = document.createElement(i === 0 ? "th" : "td");
+      cell.textContent = col;
+      tr.appendChild(cell);
+    });
+
+    table.appendChild(tr);
+  });
+}
+
+// 検索
+document.getElementById("search").addEventListener("input", function() {
+  const keyword = this.value.toLowerCase();
+
+  const filtered = data.filter((row, i) => {
+    if (i === 0) return true; // ヘッダー残す
+    return row.some(col => col.toLowerCase().includes(keyword));
+  });
+
+  render(filtered);
+});
+</script>
+
+</body>
+</html>
