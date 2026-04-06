@@ -6,6 +6,11 @@
 <style>
 body { font-family: sans-serif; padding: 10px; }
 
+#lastUpdate {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
 input {
   padding: 8px;
   width: 100%;
@@ -32,7 +37,9 @@ th {
 
 <h2>📊 商品一覧</h2>
 
-<input type="text" id="search" placeholder="検索（商品名・カテゴリなど）">
+<div id="lastUpdate">読み込み中...</div>
+
+<input type="text" id="search" placeholder="検索">
 
 <table id="table"></table>
 
@@ -43,8 +50,15 @@ fetch("items_2026-04-06.csv")
 .then(res => res.text())
 .then(text => {
   const rows = text.trim().split("\n");
-
   data = rows.map(r => r.split(","));
+
+  // 🔥 最終更新を取得
+  const times = rows.slice(1).map(r => new Date(r.split(",")[0]));
+  const latest = new Date(Math.max(...times));
+
+  document.getElementById("lastUpdate").innerText =
+    "最終更新: " + latest.toLocaleString();
+
   render(data);
 });
 
@@ -71,7 +85,7 @@ document.getElementById("search").addEventListener("input", function() {
   const keyword = this.value.toLowerCase();
 
   const filtered = data.filter((row, i) => {
-    if (i === 0) return true; // ヘッダー残す
+    if (i === 0) return true;
     return row.some(col => col.toLowerCase().includes(keyword));
   });
 
