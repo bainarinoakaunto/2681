@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>中央時計 + リアルタイム地震速報</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:#000;
+
+    overflow:hidden;
+
+    color:white;
+
+    font-family:sans-serif;
+}
+
+/* 背景Canvas */
+
+canvas{
+
+    position:fixed;
+
+    inset:0;
+
+    width:100%;
+
+    height:100%;
+
+    background:
+    radial-gradient(circle at center,#111,#000);
+}
+
+/* 日付 */
+
+.date{
+
+    position:absolute;
+
+    top:20px;
+
+    left:30px;
+
+    background:rgba(0,0,0,0.9);
+
+    border:2px solid #555;
+
+    border-radius:16px;
+
+    padding:12px 24px;
+
+    font-size:34px;
+
+    font-weight:bold;
+
+    z-index:50;
+}
+
+/* 中央時計 */
+
+.center-clock{
+
+    position:absolute;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    background:rgba(0,0,0,0.92);
+
+    border:4px solid #fff;
+
+    border-radius:28px;
+
+    padding:30px 70px;
+
+    font-size:120px;
+
+    font-weight:bold;
+
+    font-family:monospace;
+
+    letter-spacing:6px;
+
+    z-index:50;
+
+    box-shadow:
+    0 0 40px rgba(255,255,255,0.25);
+}
+
+/* 放送休止中 */
+
+.standby{
+
+    position:absolute;
+
+    bottom:40px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:rgba(0,0,0,0.92);
+
+    border:2px solid #555;
+
+    border-radius:16px;
+
+    padding:16px 34px;
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    z-index:50;
+}
+
+/* 緊急地震速報 */
+
+.alert{
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(127,29,29,0.96);
+
+    display:none;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    z-index:100;
+
+    animation:flash 0.8s infinite;
+}
+
+@keyframes flash{
+
+    0%{
+        opacity:1;
+    }
+
+    50%{
+        opacity:0.65;
+    }
+
+    100%{
+        opacity:1;
+    }
+
+}
+
+.alert h1{
+
+    font-size:100px;
+
+    margin-bottom:30px;
+}
+
+.scale{
+
+    font-size:180px;
+
+    font-weight:bold;
+
+    color:#facc15;
+
+    margin-bottom:20px;
+}
+
+.info{
+
+    font-size:44px;
+
+    margin:10px 0;
+}
+
+</style>
+</head>
+<body>
+
+<!-- 背景 -->
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- 日付 -->
+
+<div class="date" id="date">
+    2026/05/03
+</div>
+
+<!-- 中央時計 -->
+
+<div class="center-clock" id="clock">
+    00:00:00
+</div>
+
+<!-- 放送休止中 -->
+
+<div class="standby" id="standby">
+    放送休止中
+</div>
+
+<!-- 緊急地震速報 -->
+
+<div class="alert" id="alert">
+
+    <h1>
+        緊急地震速報
+    </h1>
+
+    <div class="scale" id="scale">
+        -
+    </div>
+
+    <div class="info" id="place">
+        情報取得中...
+    </div>
+
+    <div class="info" id="magnitude">
+        M-
+    </div>
+
+</div>
+
+<audio id="alertSound">
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
+</audio>
+
+<script>
+
+/* 日付・時計 */
+
+const clock =
+document.getElementById("clock");
+
+const dateText =
+document.getElementById("date");
+
+function updateDateTime(){
+
+    const now = new Date();
+
+    clock.innerText =
+    now.toLocaleTimeString("ja-JP");
+
+    dateText.innerText =
+    now.toLocaleDateString("ja-JP");
+
+}
+
+setInterval(updateDateTime,1000);
+
+updateDateTime();
+
+/* 背景Canvas */
+
+const canvas =
+document.getElementById("bgCanvas");
+
+const ctx =
+canvas.getContext("2d");
+
+function resize(){
+
+    canvas.width =
+    window.innerWidth;
+
+    canvas.height =
+    window.innerHeight;
+
+}
+
+window.addEventListener(
+"resize",
+resize
+);
+
+resize();
+
+let particles = [];
+
+for(let i=0;i<80;i++){
+
+    particles.push({
+
+        x:Math.random()*canvas.width,
+
+        y:Math.random()*canvas.height,
+
+        r:Math.random()*3+1,
+
+        vx:(Math.random()-0.5)*0.3,
+
+        vy:(Math.random()-0.5)*0.3
+
+    });
+
+}
+
+function animate(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    particles.forEach(p=>{
+
+        p.x += p.vx;
+
+        p.y += p.vy;
+
+        if(p.x < 0 || p.x > canvas.width){
+
+            p.vx *= -1;
+
+        }
+
+        if(p.y < 0 || p.y > canvas.height){
+
+            p.vy *= -1;
+
+        }
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.r,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fillStyle =
+        "rgba(255,255,255,0.15)";
+
+        ctx.fill();
+
+    });
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+animate();
+
+/* 地震速報 */
+
+const alertBox =
+document.getElementById("alert");
+
+const standby =
+document.getElementById("standby");
+
+const alertSound =
+document.getElementById("alertSound");
+
+/* WebSocket */
+
+const socket =
+new WebSocket(
+"wss://api.p2pquake.net/v2/ws"
+);
+
+socket.onopen = ()=>{
+
+    console.log("地震監視開始");
+
+};
+
+socket.onmessage = (event)=>{
+
+    const data =
+    JSON.parse(event.data);
+
+    if(data.code === 556){
+
+        const quake =
+        data.earthquake;
+
+        if(!quake) return;
+
+        const scale =
+        quake.maxScale || 0;
+
+        document.getElementById("scale")
+        .innerText =
+        convertScale(scale);
+
+        document.getElementById("place")
+        .innerText =
+        quake.hypocenter.name;
+
+        document.getElementById("magnitude")
+        .innerText =
+        "M" +
+        quake.hypocenter.magnitude;
+
+        alertBox.style.display =
+        "flex";
+
+        standby.style.display =
+        "none";
+
+        clock.style.display =
+        "none";
+
+        dateText.style.display =
+        "none";
+
+        alertSound.currentTime = 0;
+
+        alertSound.play();
+
+        clearTimeout(window.hideTimer);
+
+        window.hideTimer =
+        setTimeout(()=>{
+
+            alertBox.style.display =
+            "none";
+
+            standby.style.display =
+            "block";
+
+            clock.style.display =
+            "block";
+
+            dateText.style.display =
+            "block";
+
+        },120000);
+
+    }
+
+};
+
+socket.onerror = ()=>{
+
+    console.log("接続エラー");
+
+};
+
+socket.onclose = ()=>{
+
+    console.log("切断");
+
+};
+
+function convertScale(scale){
+
+    const table = {
+
+        10:"1",
+        20:"2",
+        30:"3",
+        40:"4",
+        45:"5弱",
+        50:"5強",
+        55:"6弱",
+        60:"6強",
+        70:"7"
+
+    };
+
+    return table[scale] || "-";
+
+}
+
+</script>
+
+</body>
+</html>
