@@ -490,7 +490,106 @@ function convertScale(scale){
     return table[scale] || "-";
 
 }
+<!-- テストボタン -->
 
+<button id="testButton">
+    緊急地震速報テスト
+</button>
+
+<style>
+
+#testButton{
+
+    position:absolute;
+
+    top:20px;
+
+    right:20px;
+
+    z-index:200;
+
+    background:#dc2626;
+
+    color:white;
+
+    border:none;
+
+    border-radius:14px;
+
+    padding:14px 24px;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    box-shadow:
+    0 0 20px rgba(220,38,38,0.4);
+
+}
+
+#testButton:hover{
+
+    opacity:0.85;
+}
+
+</style>
+
+<script>
+
+/* テスト速報 */
+
+document.getElementById("testButton")
+.addEventListener("click",()=>{
+
+    document.getElementById("scale")
+    .innerText = "5弱";
+
+    document.getElementById("place")
+    .innerText = "奈良県";
+
+    document.getElementById("magnitude")
+    .innerText = "M6.2";
+
+    alertBox.style.display =
+    "flex";
+
+    standby.style.display =
+    "none";
+
+    clock.style.display =
+    "none";
+
+    dateText.style.display =
+    "none";
+
+    alertSound.currentTime = 0;
+
+    alertSound.play();
+
+    clearTimeout(window.hideTimer);
+
+    window.hideTimer =
+    setTimeout(()=>{
+
+        alertBox.style.display =
+        "none";
+
+        standby.style.display =
+        "block";
+
+        clock.style.display =
+        "block";
+
+        dateText.style.display =
+        "block";
+
+    },120000);
+
+});
+
+</script>
 </script>
 
 </body>
