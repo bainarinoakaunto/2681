@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>勉強管理アプリ</title>
+
+<style>
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#fafafa;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+nav{
+    display:flex;
+    background:#111;
+}
+
+nav button{
+    flex:1;
+    padding:12px;
+    border:none;
+    background:#333;
+    color:#fff;
+    cursor:pointer;
+}
+
+input,textarea,button{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+    border-radius:8px;
+    border:1px solid #ddd;
+}
+
+button{
+    background:#111;
+    color:#fff;
+    border:none;
+}
+
+#statsBox{
+    background:#fff;
+    border:1px solid #eee;
+    padding:12px;
+    border-radius:10px;
+    margin:10px 0;
+}
+
+.calendar{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+}
+
+.day{
+    background:#fff;
+    border:1px solid #eee;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.done{background:#eaffea;}
+
+.date{font-weight:bold;}
+
+.subject{
+    background:#111;
+    color:#fff;
+    padding:3px 6px;
+    border-radius:999px;
+    font-size:11px;
+    display:inline-block;
+}
+
+.memo{
+    font-size:12px;
+    color:#444;
+}
+
+/* モーダル */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-box{
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    width:90%;
+    max-width:400px;
+}
+
+/* 初回注意 */
+#notice{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+}
+
+.notice-box{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    max-width:420px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ⚠ 注意 -->
+<div id="notice">
+<div class="notice-box">
+<h2>⚠ 注意事項</h2>
+<p style="font-size:14px;">
+・データはブラウザに保存されます<br>
+・一定期間開かなかった場合、データが消える可能性があります<br>
+・必ずバックアップを保存してください<br>
+・別端末とは同期されません
+</p>
+<button onclick="closeNotice()">理解しました</button>
+</div>
+</div>
+
+<div class="container">
+
+<nav>
+    <button onclick="show('cal')">カレンダー</button>
+    <button onclick="show('rec')">記録</button>
+</nav>
+
+<!-- 統計 -->
+<div id="statsBox">
+    <b>📊 今月のまとめ</b>
+    <div id="statsText"></div>
+</div>
+
+<!-- カレンダー -->
+<div id="cal" class="page active">
+    <div class="calendar" id="calendar"></div>
+</div>
+
+<!-- 記録 -->
+<div id="rec" class="page" style="display:none;">
+    <h2>✏️ 記録</h2>
+
+    <input type="date" id="date">
+    <input type="text" id="subject" placeholder="教科">
+    <input type="text" id="book" placeholder="テキスト名">
+    <input type="number" id="pages" placeholder="ページ数">
+    <textarea id="memo" placeholder="メモ"></textarea>
+
+    <button onclick="save()">保存</button>
+
+    <hr>
+
+    <h3>📦 バックアップ / 復元</h3>
+
+    <button onclick="exportData()">データをダウンロード</button>
+    <input type="file" id="file">
+    <button onclick="importData()">データを復元</button>
+</div>
+
+</div>
+
+<!-- 詳細 -->
+<div class="modal" id="detailModal">
+    <div class="modal-box">
+        <h2>📘 詳細</h2>
+        <div id="detail"></div>
+        <button onclick="closeDetail()">閉じる</button>
+    </div>
+</div>
+
+<script>
+
+// ===== 注意閉じる =====
+function closeNotice(){
+    document.getElementById("notice").style.display="none";
+}
+
+// ===== 月 =====
+let today=new Date();
+let y=today.getFullYear();
+let m=today.getMonth();
+
+// ===== データ =====
+let data=JSON.parse(localStorage.getItem("studyData"))||{};
+
+// ===== 初期日 =====
+document.getElementById("date").value=
+`${y}-${String(m+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+
+// ===== 画面切替 =====
+function show(id){
+    document.getElementById("cal").style.display=id==="cal"?"block":"none";
+    document.getElementById("rec").style.display=id==="rec"?"block":"none";
+}
+
+// ===== 統計 =====
+function getStats(){
+
+    const last=new Date(y,m+1,0).getDate();
+
+    let pages=0;
+    let missing=0;
+    let subjects=new Set();
+
+    for(let i=1;i<=last;i++){
+        const key=`${y}-${m+1}-${i}`;
+        const item=data[key];
+
+        if(!item) missing++;
+        else{
+            if(item.pages) pages+=Number(item.pages);
+            if(item.subject) subjects.add(item.subject);
+        }
+    }
+
+    return{
+        totalPages:pages,
+        subjectCount:subjects.size,
+        missingDays:missing
+    };
+}
+
+// ===== 統計表示 =====
+function renderStats(){
+    const s=getStats();
+    document.getElementById("statsText").innerHTML=
+    `📄 ${s.totalPages}ページ<br>
+     📚 ${s.subjectCount}教科<br>
+     ❌ ${s.missingDays}未記録`;
+}
+
+// ===== カレンダー =====
+function render(){
+
+    const cal=document.getElementById("calendar");
+    cal.innerHTML="";
+
+    const last=new Date(y,m+1,0).getDate();
+
+    for(let i=1;i<=last;i++){
+
+        const key=`${y}-${m+1}-${i}`;
+        const item=data[key];
+
+        const div=document.createElement("div");
+        div.className="day";
+
+        if(item) div.classList.add("done");
+
+        div.onclick=()=>showDetail(i);
+
+        div.innerHTML=
+        `<div class="date">${i}日</div>
+        ${item?
+        `<div class="subject">${item.subject}</div>
+         <div class="memo">${item.book}<br>${item.pages}P</div>`
+        :`<div class="memo">未記録</div>`}`;
+
+        cal.appendChild(div);
+    }
+}
+
+// ===== 保存 =====
+function save(){
+
+    const date=document.getElementById("date").value;
+    const subject=document.getElementById("subject").value;
+    const book=document.getElementById("book").value;
+    const pages=document.getElementById("pages").value;
+    const memo=document.getElementById("memo").value;
+
+    const p=date.split("-");
+    const key=`${Number(p[0])}-${Number(p[1])}-${Number(p[2])}`;
+
+    data[key]={subject,book,pages,memo};
+
+    localStorage.setItem("studyData",JSON.stringify(data));
+
+    render();
+    renderStats();
+}
+
+// ===== 詳細 =====
+function showDetail(day){
+
+    const key=`${y}-${m+1}-${day}`;
+    const item=data[key];
+
+    const modal=document.getElementById("detailModal");
+    const detail=document.getElementById("detail");
+
+    detail.innerHTML=item?
+    `教科:${item.subject}<br>
+     テキスト:${item.book}<br>
+     ページ:${item.pages}<br>
+     メモ:${item.memo}`
+    :"未記録";
+
+    modal.style.display="flex";
+}
+
+function closeDetail(){
+    document.getElementById("detailModal").style.display="none";
+}
+
+// ===== バックアップ =====
+function exportData(){
+
+    const json=localStorage.getItem("studyData");
+
+    const blob=new Blob([json],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="study_backup.json";
+    a.click();
+}
+
+// ===== 復元 =====
+function importData(){
+
+    const file=document.getElementById("file").files[0];
+    const reader=new FileReader();
+
+    reader.onload=function(e){
+
+        data=JSON.parse(e.target.result);
+        localStorage.setItem("studyData",JSON.stringify(data));
+
+        render();
+        renderStats();
+    };
+
+    reader.readAsText(file);
+}
+
+// ===== 初期 =====
+render();
+renderStats();
+
+</script>
+
+</body>
+</html>
