@@ -6,38 +6,47 @@
 <title>勉強管理アプリ</title>
 
 <style>
+
 body{
     margin:0;
     font-family:sans-serif;
-    background:#fafafa;
+    background:#f5f5f5;
 }
 
 .container{
-    max-width:900px;
+    max-width:1000px;
     margin:auto;
-    padding:20px;
+    padding:15px;
 }
 
 nav{
     display:flex;
     background:#111;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
 }
 
 nav button{
     flex:1;
     padding:12px;
     border:none;
-    background:#333;
+    background:#222;
     color:#fff;
     cursor:pointer;
+}
+
+nav button:hover{
+    background:#444;
 }
 
 input,textarea,button{
     width:100%;
     padding:10px;
     margin:8px 0;
-    border-radius:8px;
+    border-radius:10px;
     border:1px solid #ddd;
+    box-sizing:border-box;
 }
 
 button{
@@ -48,45 +57,59 @@ button{
 
 #statsBox{
     background:#fff;
-    border:1px solid #eee;
-    padding:12px;
-    border-radius:10px;
-    margin:10px 0;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
 }
 
 .calendar{
     display:grid;
-    grid-template-columns:repeat(5,1fr);
+    grid-template-columns:repeat(7,1fr);
     gap:10px;
 }
 
 .day{
     background:#fff;
-    border:1px solid #eee;
+    border-radius:12px;
     padding:10px;
-    border-radius:10px;
+    min-height:120px;
+    border:1px solid #ddd;
     cursor:pointer;
 }
 
-.done{background:#eaffea;}
+.today{
+    border:2px solid #4caf50;
+}
 
-.date{font-weight:bold;}
+.date{
+    font-weight:bold;
+    margin-bottom:8px;
+}
 
 .subject{
     background:#111;
     color:#fff;
-    padding:3px 6px;
+    display:inline-block;
+    padding:3px 8px;
     border-radius:999px;
     font-size:11px;
-    display:inline-block;
+    margin-bottom:5px;
 }
 
 .memo{
     font-size:12px;
     color:#444;
+    margin-bottom:6px;
+}
+
+.count{
+    font-size:11px;
+    color:#4caf50;
+    margin-top:5px;
 }
 
 /* モーダル */
+
 .modal{
     position:fixed;
     inset:0;
@@ -94,15 +117,62 @@ button{
     display:none;
     align-items:center;
     justify-content:center;
+    z-index:1000;
 }
 
 .modal-box{
     background:#fff;
-    padding:20px;
-    border-radius:12px;
     width:90%;
-    max-width:400px;
+    max-width:500px;
+    border-radius:15px;
+    padding:20px;
+    max-height:80vh;
+    overflow:auto;
 }
+
+.record{
+    border:1px solid #ddd;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.deleteBtn{
+    background:#ff4d4d;
+    margin-top:8px;
+}
+
+/* 通知 */
+
+#toast{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#4caf50;
+    color:#fff;
+    padding:12px 20px;
+    border-radius:999px;
+    font-size:14px;
+    opacity:0;
+    pointer-events:none;
+    transition:0.3s;
+    z-index:9999;
+}
+
+#toast.show{
+    opacity:1;
+    bottom:35px;
+}
+
+@media(max-width:700px){
+
+    .calendar{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
 </style>
 </head>
 
@@ -111,140 +181,304 @@ button{
 <div class="container">
 
 <nav>
-    <button onclick="show('cal')">カレンダー</button>
-    <button onclick="show('rec')">記録</button>
+    <button onclick="showPage('cal')">カレンダー</button>
+    <button onclick="showPage('rec')">記録</button>
 </nav>
 
-<!-- 月切替 -->
-<div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
     <button onclick="prevMonth()">⬅</button>
     <div id="monthLabel"></div>
     <button onclick="nextMonth()">➡</button>
 </div>
 
-<!-- 統計 -->
 <div id="statsBox">
     <b>📊 今月のまとめ</b>
     <div id="statsText"></div>
 </div>
 
 <!-- カレンダー -->
-<div id="cal" class="page active">
+
+<div id="cal">
+
     <div class="calendar" id="calendar"></div>
+
 </div>
 
 <!-- 記録 -->
-<div id="rec" class="page" style="display:none;">
-    <h2>✏️ 記録</h2>
+
+<div id="rec" style="display:none;">
+
+    <h2>✏️ 勉強記録</h2>
 
     <input type="date" id="date">
+
     <input type="text" id="subject" placeholder="教科">
-    <input type="text" id="book" placeholder="テキスト名">
+
+    <input type="text" id="book" placeholder="教材名">
+
     <input type="number" id="pages" placeholder="ページ数">
+
     <textarea id="memo" placeholder="メモ"></textarea>
 
     <button onclick="save()">保存</button>
 
     <hr>
 
-    <h3>📦 バックアップ / 復元</h3>
+    <h3>📦 バックアップ</h3>
 
-    <button onclick="exportData()">データをダウンロード</button>
+    <button onclick="exportData()">ダウンロード</button>
 
     <input type="file" id="file">
 
-    <button onclick="importData()">データを復元</button>
-</div>
+    <button onclick="importData()">復元</button>
 
 </div>
 
-<!-- 詳細 -->
+</div>
+
+<!-- 詳細モーダル -->
+
 <div class="modal" id="detailModal">
+
     <div class="modal-box">
+
         <h2>📘 詳細</h2>
+
         <div id="detail"></div>
-        <button onclick="closeDetail()">閉じる</button>
+
+        <button onclick="closeDetail()">
+            閉じる
+        </button>
+
     </div>
+
 </div>
+
+<!-- 初回注意 -->
+
+<div class="modal" id="firstModal">
+
+    <div class="modal-box">
+
+        <h2>📘 注意事項</h2>
+
+        <div style="line-height:1.8;">
+
+            ・このアプリのデータは端末内に保存されます<br><br>
+
+            ・ブラウザの履歴削除で消える場合があります<br><br>
+
+            ・定期的にバックアップしてください<br><br>
+
+            ・共有端末では使用に注意してください<br><br>
+
+            ・保存後は「成功しました」と表示されます
+
+        </div>
+
+        <button onclick="closeFirstModal()">
+            はじめる
+        </button>
+
+    </div>
+
+</div>
+
+<!-- 通知 -->
+
+<div id="toast"></div>
 
 <script>
 
-// ===== 月管理 =====
+// ===== 日付 =====
+
 let today=new Date();
+
 let y=today.getFullYear();
+
 let m=today.getMonth();
 
 // ===== データ =====
+
 let data=JSON.parse(localStorage.getItem("studyData"))||{};
 
-// ===== 初期日 =====
+// ===== 初期日付 =====
+
 document.getElementById("date").value=
 `${y}-${String(m+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
 
+// ===== 通知 =====
+
+function showToast(text){
+
+    const toast=document.getElementById("toast");
+
+    toast.innerText=text;
+
+    toast.classList.add("show");
+
+    setTimeout(()=>{
+
+        toast.classList.remove("show");
+
+    },2000);
+}
+
 // ===== 画面切替 =====
-function show(id){
-    document.getElementById("cal").style.display=id==="cal"?"block":"none";
-    document.getElementById("rec").style.display=id==="rec"?"block":"none";
+
+function showPage(id){
+
+    document.getElementById("cal").style.display=
+    id==="cal"?"block":"none";
+
+    document.getElementById("rec").style.display=
+    id==="rec"?"block":"none";
 }
 
 // ===== 月表示 =====
+
 function updateMonthLabel(){
-    document.getElementById("monthLabel").innerText=`${y}年 ${m+1}月`;
+
+    document.getElementById("monthLabel").innerText=
+    `${y}年 ${m+1}月`;
 }
 
 // ===== 月移動 =====
+
 function prevMonth(){
+
     m--;
-    if(m<0){m=11;y--;}
-    render();renderStats();updateMonthLabel();
+
+    if(m<0){
+
+        m=11;
+        y--;
+    }
+
+    render();
 }
 
 function nextMonth(){
+
     m++;
-    if(m>11){m=0;y++;}
-    render();renderStats();updateMonthLabel();
+
+    if(m>11){
+
+        m=0;
+        y++;
+    }
+
+    render();
+}
+
+// ===== 保存 =====
+
+function save(){
+
+    const date=document.getElementById("date").value;
+
+    const subject=document.getElementById("subject").value;
+
+    const book=document.getElementById("book").value;
+
+    const pages=document.getElementById("pages").value;
+
+    const memo=document.getElementById("memo").value;
+
+    if(!subject){
+
+        showToast("⚠️ 教科を入力してください");
+        return;
+    }
+
+    const p=date.split("-");
+
+    const key=
+    `${Number(p[0])}-${Number(p[1])}-${Number(p[2])}`;
+
+    if(!data[key]){
+
+        data[key]=[];
+    }
+
+    data[key].push({
+
+        subject,
+        book,
+        pages,
+        memo
+    });
+
+    localStorage.setItem(
+        "studyData",
+        JSON.stringify(data)
+    );
+
+    render();
+
+    showToast("✅ 保存に成功しました");
+
+    document.getElementById("subject").value="";
+    document.getElementById("book").value="";
+    document.getElementById("pages").value="";
+    document.getElementById("memo").value="";
 }
 
 // ===== 統計 =====
-function getStats(){
+
+function renderStats(){
+
+    let totalPages=0;
+
+    let totalRecords=0;
+
+    let subjects=new Set();
 
     const last=new Date(y,m+1,0).getDate();
 
-    let pages=0;
-    let missing=0;
-    let subjects=new Set();
-
     for(let i=1;i<=last;i++){
-        const key=`${y}-${m+1}-${i}`;
-        const item=data[key];
 
-        if(!item) missing++;
-        else{
-            if(item.pages) pages+=Number(item.pages);
-            if(item.subject) subjects.add(item.subject);
+        const key=`${y}-${m+1}-${i}`;
+
+        const items=data[key];
+
+        if(items){
+
+            items.forEach(item=>{
+
+                totalRecords++;
+
+                if(item.pages){
+
+                    totalPages+=Number(item.pages);
+                }
+
+                if(item.subject){
+
+                    subjects.add(item.subject);
+                }
+            });
         }
     }
 
-    return{
-        totalPages:pages,
-        subjectCount:subjects.size,
-        missingDays:missing
-    };
-}
-
-// ===== 統計表示 =====
-function renderStats(){
-    const s=getStats();
     document.getElementById("statsText").innerHTML=
-    `📄 ${s.totalPages}ページ<br>
-     📚 ${s.subjectCount}教科<br>
-     ❌ ${s.missingDays}未記録`;
+    `
+    📄 ${totalPages}ページ<br>
+    📚 ${subjects.size}教科<br>
+    ✏️ ${totalRecords}件
+    `;
 }
 
 // ===== カレンダー =====
+
 function render(){
 
+    updateMonthLabel();
+
+    renderStats();
+
     const cal=document.getElementById("calendar");
+
     cal.innerHTML="";
 
     const last=new Date(y,m+1,0).getDate();
@@ -252,86 +486,172 @@ function render(){
     for(let i=1;i<=last;i++){
 
         const key=`${y}-${m+1}-${i}`;
-        const item=data[key];
+
+        const items=data[key];
 
         const div=document.createElement("div");
+
         div.className="day";
 
-        if(item) div.classList.add("done");
+        if(
+            y===today.getFullYear() &&
+            m===today.getMonth() &&
+            i===today.getDate()
+        ){
+
+            div.classList.add("today");
+        }
 
         div.onclick=()=>showDetail(i);
 
-        div.innerHTML=
-        `<div class="date">${i}日</div>
-        ${item?
-        `<div class="subject">${item.subject}</div>
-         <div class="memo">${item.book}<br>${item.pages}P</div>`
-        :`<div class="memo">未記録</div>`}`;
+        let html=`<div class="date">${i}日</div>`;
+
+        if(items){
+
+            items.slice(0,2).forEach(item=>{
+
+                html+=`
+                <div class="subject">${item.subject}</div>
+                <div class="memo">
+                ${item.book}<br>
+                ${item.pages}P
+                </div>
+                `;
+            });
+
+            html+=`
+            <div class="count">
+            ${items.length}件記録
+            </div>
+            `;
+
+        }else{
+
+            html+=`<div class="memo">未記録</div>`;
+        }
+
+        div.innerHTML=html;
 
         cal.appendChild(div);
     }
 }
 
-// ===== 保存 =====
-function save(){
-
-    const date=document.getElementById("date").value;
-    const subject=document.getElementById("subject").value;
-    const book=document.getElementById("book").value;
-    const pages=document.getElementById("pages").value;
-    const memo=document.getElementById("memo").value;
-
-    const p=date.split("-");
-    const key=`${Number(p[0])}-${Number(p[1])}-${Number(p[2])}`;
-
-    data[key]={subject,book,pages,memo};
-
-    localStorage.setItem("studyData",JSON.stringify(data));
-
-    render();renderStats();
-}
-
 // ===== 詳細 =====
+
 function showDetail(day){
 
     const key=`${y}-${m+1}-${day}`;
-    const item=data[key];
 
-    const modal=document.getElementById("detailModal");
+    const items=data[key];
+
     const detail=document.getElementById("detail");
 
-    detail.innerHTML=item?
-    `教科:${item.subject}<br>
-     テキスト:${item.book}<br>
-     ページ:${item.pages}<br>
-     メモ:${item.memo}`
-    :"未記録";
+    if(!items){
 
-    modal.style.display="flex";
+        detail.innerHTML="未記録";
+
+    }else{
+
+        let html="";
+
+        items.forEach((item,index)=>{
+
+            html+=`
+            <div class="record">
+
+                <b>${item.subject}</b><br>
+
+                📘 ${item.book}<br>
+
+                📄 ${item.pages}P<br>
+
+                📝 ${item.memo}<br>
+
+                <button class="deleteBtn"
+                onclick="deleteRecord('${key}',${index})">
+                削除
+                </button>
+
+            </div>
+            `;
+        });
+
+        detail.innerHTML=html;
+    }
+
+    document.getElementById("detailModal").style.display="flex";
 }
 
+// ===== 削除 =====
+
+function deleteRecord(key,index){
+
+    data[key].splice(index,1);
+
+    if(data[key].length===0){
+
+        delete data[key];
+    }
+
+    localStorage.setItem(
+        "studyData",
+        JSON.stringify(data)
+    );
+
+    render();
+
+    showToast("🗑️ 削除しました");
+
+    const p=key.split("-");
+
+    showDetail(Number(p[2]));
+}
+
+// ===== 閉じる =====
+
 function closeDetail(){
+
     document.getElementById("detailModal").style.display="none";
 }
 
-// ===== バックアップ =====
+// ===== ダウンロード =====
+
 function exportData(){
 
-    const json=localStorage.getItem("studyData");
+    const json=
+    localStorage.getItem("studyData");
 
-    const blob=new Blob([json],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
+    const blob=
+    new Blob([json],{
+        type:"application/json"
+    });
+
+    const url=
+    URL.createObjectURL(blob);
 
     const a=document.createElement("a");
+
     a.href=url;
+
     a.download="study_backup.json";
+
     a.click();
+
+    showToast("⬇️ ダウンロード開始");
 }
 
 // ===== 復元 =====
+
 function importData(){
 
-    const file=document.getElementById("file").files[0];
+    const file=
+    document.getElementById("file").files[0];
+
+    if(!file){
+
+        showToast("⚠️ ファイルを選択");
+        return;
+    }
 
     const reader=new FileReader();
 
@@ -339,18 +659,43 @@ function importData(){
 
         data=JSON.parse(e.target.result);
 
-        localStorage.setItem("studyData",JSON.stringify(data));
+        localStorage.setItem(
+            "studyData",
+            JSON.stringify(data)
+        );
 
-        render();renderStats();
+        render();
+
+        showToast("📦 復元しました");
     };
 
     reader.readAsText(file);
 }
 
-// ===== 初期 =====
-updateMonthLabel();
+// ===== 初回注意 =====
+
+function closeFirstModal(){
+
+    document.getElementById("firstModal").style.display="none";
+
+    localStorage.setItem(
+        "studyAppFirstOpen",
+        "done"
+    );
+}
+
+window.addEventListener("load",()=>{
+
+    if(!localStorage.getItem("studyAppFirstOpen")){
+
+        document.getElementById("firstModal").style.display="flex";
+    }
+
+});
+
+// ===== 初期表示 =====
+
 render();
-renderStats();
 
 </script>
 
