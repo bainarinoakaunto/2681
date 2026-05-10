@@ -103,42 +103,10 @@ button{
     width:90%;
     max-width:400px;
 }
-
-/* 初回注意 */
-#notice{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.7);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
-}
-
-.notice-box{
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    max-width:420px;
-}
 </style>
 </head>
 
 <body>
-
-<!-- ⚠ 注意 -->
-<div id="notice">
-<div class="notice-box">
-<h2>⚠ 注意事項</h2>
-<p style="font-size:14px;">
-・データはブラウザに保存されます<br>
-・一定期間開かなかった場合、データが消える可能性があります<br>
-・必ずバックアップを保存してください<br>
-・別端末とは同期されません
-</p>
-<button onclick="closeNotice()">理解しました</button>
-</div>
-</div>
 
 <div class="container">
 
@@ -146,6 +114,13 @@ button{
     <button onclick="show('cal')">カレンダー</button>
     <button onclick="show('rec')">記録</button>
 </nav>
+
+<!-- 月切替 -->
+<div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+    <button onclick="prevMonth()">⬅</button>
+    <div id="monthLabel"></div>
+    <button onclick="nextMonth()">➡</button>
+</div>
 
 <!-- 統計 -->
 <div id="statsBox">
@@ -175,7 +150,9 @@ button{
     <h3>📦 バックアップ / 復元</h3>
 
     <button onclick="exportData()">データをダウンロード</button>
+
     <input type="file" id="file">
+
     <button onclick="importData()">データを復元</button>
 </div>
 
@@ -192,12 +169,7 @@ button{
 
 <script>
 
-// ===== 注意閉じる =====
-function closeNotice(){
-    document.getElementById("notice").style.display="none";
-}
-
-// ===== 月 =====
+// ===== 月管理 =====
 let today=new Date();
 let y=today.getFullYear();
 let m=today.getMonth();
@@ -213,6 +185,24 @@ document.getElementById("date").value=
 function show(id){
     document.getElementById("cal").style.display=id==="cal"?"block":"none";
     document.getElementById("rec").style.display=id==="rec"?"block":"none";
+}
+
+// ===== 月表示 =====
+function updateMonthLabel(){
+    document.getElementById("monthLabel").innerText=`${y}年 ${m+1}月`;
+}
+
+// ===== 月移動 =====
+function prevMonth(){
+    m--;
+    if(m<0){m=11;y--;}
+    render();renderStats();updateMonthLabel();
+}
+
+function nextMonth(){
+    m++;
+    if(m>11){m=0;y++;}
+    render();renderStats();updateMonthLabel();
 }
 
 // ===== 統計 =====
@@ -298,8 +288,7 @@ function save(){
 
     localStorage.setItem("studyData",JSON.stringify(data));
 
-    render();
-    renderStats();
+    render();renderStats();
 }
 
 // ===== 詳細 =====
@@ -343,21 +332,23 @@ function exportData(){
 function importData(){
 
     const file=document.getElementById("file").files[0];
+
     const reader=new FileReader();
 
     reader.onload=function(e){
 
         data=JSON.parse(e.target.result);
+
         localStorage.setItem("studyData",JSON.stringify(data));
 
-        render();
-        renderStats();
+        render();renderStats();
     };
 
     reader.readAsText(file);
 }
 
 // ===== 初期 =====
+updateMonthLabel();
 render();
 renderStats();
 
