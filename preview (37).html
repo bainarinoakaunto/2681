@@ -36,8 +36,6 @@ button{
 
 .start{background:#28a745;}
 .stop{background:#e53935;}
-.backup{background:#ff9800;}
-.restore{background:#3f51b5;}
 
 .card{
   background:white;
@@ -51,7 +49,6 @@ button{
   padding:10px;
   margin-top:10px;
   border-radius:10px;
-  font-size:18px;
 }
 </style>
 </head>
@@ -64,13 +61,6 @@ button{
 
 <button class="start" onclick="startRide()">記録開始</button>
 <button class="stop" onclick="stopRide()">記録終了</button>
-
-<button class="backup" onclick="exportData()">📥 バックアップ保存</button>
-
-<input type="file" id="file" style="display:none" onchange="importData(event)">
-<button class="restore" onclick="document.getElementById('file').click()">
-📤 バックアップ復元
-</button>
 
 <div class="total">
 総距離: <span id="total">0</span> km
@@ -96,11 +86,6 @@ function save(){
 
 // 🚴 開始
 function startRide(){
-
-  if(!navigator.geolocation){
-    alert("GPS未対応");
-    return;
-  }
 
   route = [];
   totalDistance = 0;
@@ -131,7 +116,8 @@ function stopRide(){
   const minutes = (endTime - startTime) / 60000;
   const hours = minutes / 60;
 
-  const avgSpeed = hours > 0 ? totalDistance / hours : 0;
+  const avgSpeed =
+    hours > 0 ? (totalDistance / hours) : 0;
 
   records.push({
     date: new Date().toLocaleString(),
@@ -186,10 +172,11 @@ function updateTotal(){
   document.getElementById("total").innerText = t.toFixed(2);
 }
 
-// 📏 距離計算
+// 📏 距離計算（km）
 function calc(a,b){
 
   const R = 6371;
+
   const dLat = (b[0]-a[0]) * Math.PI/180;
   const dLon = (b[1]-a[1]) * Math.PI/180;
 
@@ -200,55 +187,6 @@ function calc(a,b){
     Math.sin(dLon/2)**2;
 
   return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
-}
-
-// 📥 バックアップ保存
-function exportData(){
-
-  const blob = new Blob(
-    [JSON.stringify(records)],
-    {type:"application/json"}
-  );
-
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "bike_backup.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
-// 📤 復元
-function importData(event){
-
-  const file = event.target.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = function(e){
-
-    try{
-      const data = JSON.parse(e.target.result);
-
-      if(Array.isArray(data)){
-        records = data;
-        save();
-        show();
-        updateTotal();
-        alert("復元完了");
-      } else {
-        alert("データ形式エラー");
-      }
-
-    } catch{
-      alert("読み込み失敗");
-    }
-  };
-
-  reader.readAsText(file);
 }
 
 show();
