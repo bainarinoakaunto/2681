@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>自転車GPS記録</title>
+
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#eef3f7;
+}
+
+header{
+  background:#2196f3;
+  color:white;
+  padding:15px;
+  text-align:center;
+}
+
+.container{
+  padding:10px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:5px;
+  border:none;
+  border-radius:6px;
+  color:white;
+  font-size:16px;
+}
+
+.start{background:#28a745;}
+.stop{background:#e53935;}
+.backup{background:#ff9800;}
+.restore{background:#3f51b5;}
+
+.card{
+  background:white;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
+}
+
+.total{
+  background:white;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🚴 GPS自転車記録</header>
+
+<div class="container">
+
+<button class="start" onclick="startRide()">記録開始</button>
+<button class="stop" onclick="stopRide()">記録終了</button>
+
+<button class="backup" onclick="exportData()">📥 バックアップ保存</button>
+
+<input type="file" id="file" style="display:none" onchange="importData(event)">
+<button class="restore" onclick="document.getElementById('file').click()">
+📤 バックアップ復元
+</button>
+
+<div class="total">
+総距離: <span id="total">0</span> km
+</div>
+
+<h3>記録一覧</h3>
+<div id="list"></div>
+
+</div>
+
+<script>
+
+let watchId;
+let route = [];
+let totalDistance = 0;
+let startTime = null;
+
+let records = JSON.parse(localStorage.getItem("bike")) || [];
+
+function save(){
+  localStorage.setItem("bike", JSON.stringify(records));
+}
+
+// 🚴 開始
+function startRide(){
+
+  if(!navigator.geolocation){
+    alert("GPS未対応");
+    return;
+  }
+
+  route = [];
+  totalDistance = 0;
+  startTime = new Date();
+
+  watchId = navigator.geolocation.watchPosition(pos => {
+
+    const p = [pos.coords.latitude, pos.coords.longitude];
+    route.push(p);
+
+    if(route.length > 1){
+      const a = route[route.length-2];
+      const b = route[route.length-1];
+      totalDistance += calc(a,b);
+    }
+
+  });
+
+  alert("記録開始");
+}
+
+// 🛑 終了
+function stopRide(){
+
+  navigator.geolocation.clearWatch(watchId);
+
+  const endTime = new Date();
+  const minutes = (endTime - startTime) / 60000;
+  const hours = minutes / 60;
+
+  const avgSpeed = hours > 0 ? totalDistance / hours : 0;
+
+  records.push({
+    date: new Date().toLocaleString(),
+    distance: totalDistance.toFixed(2),
+    time: minutes.toFixed(1),
+    speed: avgSpeed.toFixed(1)
+  });
+
+  save();
+  show();
+  updateTotal();
+
+  alert("保存完了");
+}
+
+// 📋 表示
+function show(){
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  if(records.length === 0){
+    list.innerHTML = "<p>まだ記録がありません</p>";
+    return;
+  }
+
+  records.forEach(r => {
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      📅 ${r.date}<br>
+      🚴 ${r.distance} km<br>
+      ⏱ ${r.time} 分<br>
+      🚀 平均速度: ${r.speed} km/h
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+// 🔢 総距離
+function updateTotal(){
+
+  let t = 0;
+
+  records.forEach(r => {
+    t += parseFloat(r.distance);
+  });
+
+  document.getElementById("total").innerText = t.toFixed(2);
+}
+
+// 📏 距離計算
+function calc(a,b){
+
+  const R = 6371;
+  const dLat = (b[0]-a[0]) * Math.PI/180;
+  const dLon = (b[1]-a[1]) * Math.PI/180;
+
+  const x =
+    Math.sin(dLat/2)**2 +
+    Math.cos(a[0]*Math.PI/180) *
+    Math.cos(b[0]*Math.PI/180) *
+    Math.sin(dLon/2)**2;
+
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+}
+
+// 📥 バックアップ保存
+function exportData(){
+
+  const blob = new Blob(
+    [JSON.stringify(records)],
+    {type:"application/json"}
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bike_backup.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// 📤 復元
+function importData(event){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+
+    try{
+      const data = JSON.parse(e.target.result);
+
+      if(Array.isArray(data)){
+        records = data;
+        save();
+        show();
+        updateTotal();
+        alert("復元完了");
+      } else {
+        alert("データ形式エラー");
+      }
+
+    } catch{
+      alert("読み込み失敗");
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+show();
+updateTotal();
+
+</script>
+
+</body>
+</html>
