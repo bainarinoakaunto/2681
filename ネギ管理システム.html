@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ネギQR共有システム</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    background:#f3fff3;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    color:#2e8b57;
+}
+
+.box{
+    max-width:500px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:15px;
+    border:none;
+    border-radius:12px;
+    background:#2e8b57;
+    color:white;
+    font-size:18px;
+}
+
+button:hover{
+    background:#256d46;
+}
+
+#result{
+    margin-top:15px;
+    font-weight:bold;
+    color:#2e8b57;
+    text-align:center;
+}
+
+#qr{
+    margin-top:15px;
+    text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ネギQR＋共有</h1>
+
+<div class="box">
+
+    <button onclick="createQR()">
+        管理番号＋QR生成
+    </button>
+
+    <button onclick="shareData()">
+        QR付きで共有
+    </button>
+
+    <div id="result"></div>
+    <div id="qr"></div>
+
+</div>
+
+<!-- QRライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+let currentID = "";
+let qrCanvas = null;
+
+function getToday(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}${m}${day}`;
+}
+
+// QR生成
+function createQR(){
+
+    let count =
+        localStorage.getItem("negi_count") || 0;
+
+    count = Number(count) + 1;
+
+    localStorage.setItem("negi_count", count);
+
+    currentID =
+        `NEG-${getToday()}-${String(count).padStart(3,'0')}`;
+
+    document.getElementById("result").innerText =
+        currentID;
+
+    const qrText =
+        `ネギ管理番号:${currentID}`;
+
+    const qrArea =
+        document.getElementById("qr");
+
+    qrArea.innerHTML = "";
+
+    QRCode.toCanvas(qrText, {width:220}, function(err, canvas){
+
+        if(err){
+            qrArea.innerHTML = "QR生成エラー";
+            return;
+        }
+
+        qrCanvas = canvas; // ★保存（共有用）
+
+        qrArea.appendChild(canvas);
+    });
+}
+
+// QR付き共有
+function shareData(){
+
+    if(!currentID){
+        alert("先にQRを生成してください");
+        return;
+    }
+
+    const text =
+`🌱 ネギ管理番号
+
+${currentID}
+`;
+
+    if(qrCanvas){
+
+        qrCanvas.toBlob(function(blob){
+
+            const file = new File([blob], "negi_qr.png", {
+                type: "image/png"
+            });
+
+            if(navigator.canShare && navigator.canShare({files:[file]})){
+
+                navigator.share({
+                    title: "ネギ管理番号QR",
+                    text: text,
+                    files: [file]
+                });
+
+            } else {
+
+                navigator.share({
+                    title: "ネギ管理番号",
+                    text: text
+                });
+
+            }
+
+        });
+
+    } else {
+
+        navigator.share({
+            title: "ネギ管理番号",
+            text: text
+        });
+
+    }
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ネギ育種記録システム</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    background:#f3fff3;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    color:#2e8b57;
+}
+
+.box{
+    max-width:540px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+label{
+    display:block;
+    margin-top:12px;
+    font-weight:bold;
+}
+
+input, select, textarea{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:15px;
+    border:none;
+    border-radius:12px;
+    background:#2e8b57;
+    color:white;
+    font-size:18px;
+}
+
+button:hover{
+    background:#256d46;
+}
+
+#status{
+    margin-top:10px;
+    font-size:14px;
+    background:#f0f0f0;
+    padding:10px;
+    border-radius:10px;
+}
+
+img{
+    width:100%;
+    margin-top:10px;
+    border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ネギ育種記録</h1>
+
+<div class="box">
+
+    <label>① QR読み取り（管理番号）</label>
+    <input type="file" id="qrfile" accept="image/*" onchange="readQR()">
+
+    <div id="status">未読み取り</div>
+
+    <label>管理番号</label>
+    <input type="text" id="type" placeholder="NEG-20260524-001">
+
+    <hr>
+
+    <label>② 生育ステージ</label>
+    <select id="stage">
+        <option>発芽</option>
+        <option>育苗</option>
+        <option>定植直後</option>
+        <option>生育中期</option>
+        <option>収穫前</option>
+    </select>
+
+    <label>葉色</label>
+    <select id="color">
+        <option>濃緑</option>
+        <option>緑</option>
+        <option>淡緑</option>
+        <option>黄化</option>
+    </select>
+
+    <label>生育評価</label>
+    <select id="growth">
+        <option>非常に良い</option>
+        <option>良い</option>
+        <option>普通</option>
+        <option>悪い</option>
+    </select>
+
+    <label>③ 写真</label>
+    <input type="file" id="photo" accept="image/*" onchange="previewPhoto()">
+
+    <img id="preview" style="display:none;">
+
+    <label>メモ</label>
+    <textarea id="memo" rows="3"></textarea>
+
+    <button onclick="shareRecord()">画像＋記録を共有</button>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+
+<script>
+
+// QR読み取り
+function readQR(){
+
+    const file = document.getElementById("qrfile").files[0];
+    if(!file) return;
+
+    const status = document.getElementById("status");
+    status.innerText = "読み取り中...";
+
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = function(){
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.drawImage(img,0,0);
+
+        const imageData =
+            ctx.getImageData(0,0,canvas.width,canvas.height);
+
+        const code =
+            jsQR(imageData.data, canvas.width, canvas.height);
+
+        if(code){
+
+            const match = code.data.match(/NEG-[0-9A-Za-z\-]+/);
+            const id = match ? match[0] : code.data;
+
+            document.getElementById("type").value = id;
+
+            status.innerText = "QR成功: " + id;
+
+        } else {
+            status.innerText = "QRが読み取れませんでした";
+        }
+    };
+}
+
+// 写真プレビュー
+function previewPhoto(){
+
+    const file = document.getElementById("photo").files[0];
+    if(!file) return;
+
+    const img = document.getElementById("preview");
+    img.style.display = "block";
+    img.src = URL.createObjectURL(file);
+}
+
+// 共有（画像＋テキスト）
+function shareRecord(){
+
+    const file = document.getElementById("photo").files[0];
+
+    const d = new Date();
+    const date =
+        `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+    const text =
+`🌱 ネギ育種記録
+
+日付: ${date}
+管理番号: ${document.getElementById("type").value}
+
+生育ステージ: ${document.getElementById("stage").value}
+葉色: ${document.getElementById("color").value}
+生育評価: ${document.getElementById("growth").value}
+
+メモ:
+${document.getElementById("memo").value}
+`;
+
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+
+        navigator.share({
+            title: `${date}｜ネギ育種記録`,
+            text: text,
+            files: [file]
+        });
+
+    } else {
+
+        navigator.share({
+            title: `${date}｜ネギ育種記録`,
+            text: text
+        });
+
+    }
+}
+
+</script>
+
+</body>
+</html>
