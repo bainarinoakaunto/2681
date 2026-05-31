@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リンク題名機能付き 課題管理アプリ</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #16a085;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --priority: #e67e22;
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #333333;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .date-dashboard {
+            max-width: 1100px;
+            margin: 0 auto 15px auto;
+            background: linear-gradient(135deg, var(--primary), #35537d);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .priority-sidebar { order: -1; }
+        }
+
+        .container, .priority-sidebar {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .priority-sidebar {
+            background: #fff5eb;
+            border: 2px solid var(--priority);
+            align-self: start;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--priority);
+            margin-bottom: 15px;
+            border-bottom: 2px solid #fbd38d;
+            padding-bottom: 8px;
+        }
+
+        h1 { color: var(--primary); margin-top: 0; font-size: 22px; }
+
+        .task-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        /* リンク入力エリアのスタイル調整 */
+        .links-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .link-input-group {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 500px) {
+            .link-input-group { grid-template-columns: 1fr; gap: 4px; }
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button.add-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: bold; color: #666; }
+        .tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); margin-bottom: -2px; }
+
+        .task-list { list-style: none; padding: 0; margin: 0; }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #fdfdfd;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .task-item.priority { border: 2px solid var(--priority); background-color: #fffaf5; }
+        .task-info { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .task-title { font-weight: bold; font-size: 16px; }
+        
+        .priority-badge {
+            background-color: var(--priority);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+
+        .subject-badge { background: #e8edf5; color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-right: 5px; font-weight: bold; }
+        .due-badge { color: var(--danger); font-weight: bold; font-size: 12px; }
+        .deleted-notice { color: #888; font-size: 11px; margin-top: 2px; }
+
+        .task-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .attachment-link { font-size: 12px; color: var(--primary); text-decoration: none; background: #f0f4f8; padding: 4px 10px; border-radius: 12px; border: 1px solid #d0dbe5; font-weight: 5px; }
+        .attachment-link:hover { background: #e1ebf5; }
+
+        .task-actions { display: flex; gap: 8px; }
+        .action-btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .complete-btn { background-color: var(--secondary); color: white; }
+        .return-btn { background-color: var(--warning); color: white; }
+        .delete-btn { background-color: var(--danger); color: white; }
+        
+        .star-btn { background: none; border: none; color: #ccc; font-size: 20px; cursor: pointer; }
+        .star-btn.active { color: var(--priority); }
+
+        .mini-priority-item { background: white; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid var(--priority); font-size: 13px; }
+        .empty-message { text-align: center; color: #999; padding: 15px; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="date-dashboard" id="date_dashboard">----年--月--日 (-)</div>
+
+<div class="main-layout">
+    <div class="container">
+        <h1>📝 課題タスク管理</h1>
+
+        <div class="task-form">
+            <div class="form-row">
+                <input type="text" id="task_title" placeholder="課題名（必須）">
+                <input type="text" id="task_subject" placeholder="科目名">
+                <input type="date" id="task_due">
+            </div>
+            
+            <div class="links-area">
+                <div style="font-size: 12px; color: #666; font-weight: bold; margin-bottom: 4px;">関連リンク（最大3つ）</div>
+                <div class="link-input-group">
+                    <input type="text" id="link_title1" placeholder="題名（例: Classroom）">
+                    <input type="text" id="link_url1" placeholder="URL (https://...)">
+                </div>
+                <div class="link-input-group">
+                    <input type="text" id="link_title2" placeholder="題名（例: 配布資料）">
+                    <input type="text" id="link_url2" placeholder="URL (https://...)">
+                </div>
+                <div class="link-input-group">
+                    <input type="text" id="link_title3" placeholder="題名（例: 参考サイト）">
+                    <input type="text" id="link_url3" placeholder="URL (https://...)">
+                </div>
+            </div>
+            
+            <button class="add-btn" onclick="addTask()">課題を追加する</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" id="tab_uncompleted" onclick="switchTab('uncompleted')">未提出 (<span id="count_uncompleted">0</span>)</div>
+            <div class="tab" id="tab_completed" onclick="switchTab('completed')">提出済み (<span id="count_completed">0</span>)</div>
+        </div>
+
+        <ul id="task_list" class="task-list"></ul>
+    </div>
+
+    <div class="priority-sidebar">
+        <div class="sidebar-title">🔥 最優先課題ショートカット</div>
+        <div id="priority_task_list"></div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'perfect_assignment_tasks_v3'; // バージョンアップに伴いキーを変更
+    let tasks = [];
+    
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) tasks = JSON.parse(saved);
+    } catch(e) {
+        console.log("ストレージ読み込み制限を回避しました");
+    }
+
+    let currentTab = 'uncompleted';
+
+    displayDate();
+    cleanOldTasks();
+    render();
+
+    function displayDate() {
+        const weeks = ['日', '月', '火', '水', '木', '金', '土'];
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const w = weeks[now.getDay()];
+        document.getElementById('date_dashboard').innerText = `${y}年${m}月${d}日 (${w})`;
+    }
+
+    function cleanOldTasks() {
+        const FOUR_WEEKS_MS = 4 * 7 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        tasks = tasks.filter(t => {
+            if (t.completed && t.completedAt) {
+                return (now - t.completedAt) < FOUR_WEEKS_MS; 
+            }
+            return true;
+        });
+        saveTasks();
+    }
+
+    function addTask() {
+        const title = document.getElementById('task_title').value.trim();
+        const subject = document.getElementById('task_subject').value.trim() || 'その他';
+        const due = document.getElementById('task_due').value || '期限なし';
+        
+        if (!title) {
+            alert('課題名を入力してください！');
+            return;
+        }
+
+        // 題名とURLのペアをオブジェクトとして配列に格納
+        const links = [];
+        for (let i = 1; i <= 3; i++) {
+            const lTitle = document.getElementById(`link_title${i}`).value.trim();
+            const lUrl = document.getElementById(`link_url${i}`).value.trim();
+            
+            if (lUrl) {
+                links.push({
+                    name: lTitle || `リンク [${i}]`, // 題名が空の場合は自動で番号
+                    url: lUrl
+                });
+            }
+        }
+
+        const newTask = {
+            id: Date.now(),
+            title: title,
+            subject: subject,
+            due: due,
+            completed: false,
+            completedAt: null,
+            isPriority: false,
+            links: links
+        };
+
+        tasks.push(newTask);
+        saveTasks();
+        render();
+
+        // フォームクリア
+        document.getElementById('task_title').value = '';
+        document.getElementById('task_subject').value = '';
+        document.getElementById('task_due').value = '';
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById(`link_title${i}`).value = '';
+            document.getElementById(`link_url${i}`).value = '';
+        }
+    }
+
+    function togglePriority(id) {
+        tasks = tasks.map(t => t.id === id ? {...t, isPriority: !t.isPriority} : t);
+        saveTasks();
+        render();
+    }
+
+    function toggleComplete(id) {
+        tasks = tasks.map(t => {
+            if (t.id === id) {
+                const nextStatus = !t.completed;
+                return {
+                    ...t, 
+                    completed: nextStatus,
+                    completedAt: nextStatus ? Date.now() : null
+                };
+            }
+            return t;
+        });
+        saveTasks();
+        render();
+    }
+
+    function deleteTask(id) {
+        if (confirm('この課題を削除しますか？')) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            render();
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tab_uncompleted').classList.toggle('active', tab === 'uncompleted');
+        document.getElementById('tab_completed').classList.toggle('active', tab === 'completed');
+        render();
+    }
+
+    function saveTasks() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        } catch(e) {
+            console.log("ストレージ保存制限を回避しました");
+        }
+    }
+
+    function render() {
+        const listContainer = document.getElementById('task_list');
+        const priorityContainer = document.getElementById('priority_task_list');
+        
+        listContainer.innerHTML = '';
+        priorityContainer.innerHTML = '';
+
+        const uncompletedCount = tasks.filter(t => !t.completed).length;
+        const completedCount = tasks.filter(t => t.completed).length;
+        document.getElementById('count_uncompleted').innerText = uncompletedCount;
+        document.getElementById('count_completed').innerText = completedCount;
+
+        const priorityTasks = tasks.filter(t => t.isPriority && !t.completed);
+        priorityTasks.sort((a, b) => {
+            if (a.due === '期限なし') return 1;
+            if (b.due === '期限なし') return -1;
+            return new Date(a.due) - new Date(b.due);
+        });
+
+        if (priorityTasks.length === 0) {
+            priorityContainer.innerHTML = `<div class="empty-message">最優先課題はありません。</div>`;
+        } else {
+            priorityTasks.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'mini-priority-item';
+                div.innerHTML = `
+                    <div style="font-weight:bold; margin-bottom:4px;">${t.title}</div>
+                    <div style="font-size:11px; color:#666; display:flex; justify-content:space-between;">
+                        <span>📚 ${t.subject}</span>
+                        <span style="color:var(--danger); font-weight:bold;">⏰ ${t.due}</span>
+                    </div>
+                `;
+                priorityContainer.appendChild(div);
+            });
+        }
+
+        let filtered = tasks.filter(t => currentTab === 'completed' ? t.completed : !t.completed);
+
+        filtered.sort((a, b) => {
+            if (a.due === '期限なし' && b.due === '期限なし') {
+                if (a.isPriority && !b.isPriority) return -1;
+                if (!a.isPriority && b.isPriority) return 1;
+                return b.id - a.id;
+            }
+            if (a.due === '期限なし') return 1;
+            if (b.due === '期限なし') return -1;
+
+            const dateA = new Date(a.due);
+            const dateB = new Date(b.due);
+
+            if (dateA.getTime() !== dateB.getTime()) {
+                return dateA - dateB;
+            } else {
+                if (a.isPriority && !b.isPriority) return -1;
+                if (!a.isPriority && b.isPriority) return 1;
+                return b.id - a.id;
+            }
+        });
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = `<li class="empty-message">表示する課題はありません。</li>`;
+            return;
+        }
+
+        filtered.forEach(t => {
+            const li = document.createElement('li');
+            li.className = `task-item ${t.isPriority ? 'priority' : ''}`;
+
+            let linksHtml = '';
+            if (t.links && t.links.length > 0) {
+                linksHtml = `<div class="task-links">`;
+                t.links.forEach((linkObj) => {
+                    const hrefUrl = linkObj.url.startsWith('http') ? linkObj.url : `https://${linkObj.url}`;
+                    // 設定した「題名」をボタンのテキストとして表示
+                    linksHtml += `<a href="${hrefUrl}" target="_blank" class="attachment-link">🔗 ${linkObj.name}</a>`;
+                });
+                linksHtml += `</div>`;
+            }
+
+            let deleteNoticeHtml = '';
+            if (t.completed && t.completedAt) {
+                const msPassed = Date.now() - t.completedAt;
+                const daysLeft = Math.ceil((4 * 7 * 24 * 60 * 60 * 1000 - msPassed) / (24 * 60 * 60 * 1000));
+                deleteNoticeHtml = `<div class="deleted-notice">※あと約 ${daysLeft} 日で自動クリーンアップされます</div>`;
+            }
+
+            li.innerHTML = `
+                <div class="task-info">
+                    <div style="display:flex; align-items:center;">
+                        ${t.isPriority ? `<span class="priority-badge">最優先</span>` : ''}
+                        <div class="task-title">${t.title}</div>
+                    </div>
+                    <div style="margin-top:4px;">
+                        <span class="subject-badge">${t.subject}</span>
+                        <span class="due-badge">⏰ 期限: ${t.due}</span>
+                        ${deleteNoticeHtml}
+                    </div>
+                    ${linksHtml}
+                </div>
+                <div class="task-actions">
+                    <button class="star-btn ${t.isPriority ? 'active' : ''}" onclick="togglePriority(${t.id})">
+                        ${t.isPriority ? '★' : '☆'}
+                    </button>
+                    ${t.completed ? 
+                        `<button class="action-btn return-btn" onclick="toggleComplete(${t.id})">戻す</button>` : 
+                        `<button class="action-btn complete-btn" onclick="toggleComplete(${t.id})">完了</button>`
+                    }
+                    <button class="action-btn delete-btn" onclick="deleteTask(${t.id})">削除</button>
+                </div>
+            `;
+            listContainer.appendChild(li);
+        });
+    }
+</script>
+</body>
+</html>
