@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ねぎ育種ブログ作成</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    background:#f5f8f4;
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+h1{
+    color:#2e7d32;
+}
+
+.card{
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+select,textarea,input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:20px;
+    border:none;
+    border-radius:10px;
+    background:#2e7d32;
+    color:white;
+    cursor:pointer;
+}
+
+#result{
+    white-space:pre-line;
+    line-height:1.9;
+}
+</style>
+</head>
+<body>
+
+<h1>🌱 ねぎ育種ブログ生成</h1>
+
+<div class="card">
+
+<label>記事タイトル</label>
+<input id="title" value="本日の記録">
+
+<label>生育ステージ</label>
+<select id="stage">
+<option>発芽</option>
+<option>育苗中</option>
+<option>生育初期</option>
+<option>生育中期</option>
+<option>生育後期</option>
+<option>開花</option>
+<option>採種</option>
+</select>
+
+<label>葉色</label>
+<select id="leaf">
+<option>やや薄い</option>
+<option selected>標準</option>
+<option>やや濃い</option>
+<option>濃い</option>
+</select>
+
+<label>生育評価</label>
+<select id="growth">
+<option>非常に良い</option>
+<option>良い</option>
+<option selected>普通</option>
+<option>やや悪い</option>
+</select>
+
+<label>今日の作業</label>
+<select id="work">
+<option>観察</option>
+<option>水やり</option>
+<option>追肥</option>
+<option>選抜</option>
+<option>交配作業</option>
+</select>
+
+<label>気づいたこと</label>
+<textarea id="memo" rows="4"
+placeholder="例：成長の早い個体が見られた"></textarea>
+
+<button onclick="createBlog()">ブログ生成</button>
+
+</div>
+
+<div class="card">
+<h2>📝 ブログ記事</h2>
+<div id="result">ここに記事が表示されます。</div>
+</div>
+
+<script>
+
+function createBlog(){
+
+const title = document.getElementById("title").value;
+const stage = document.getElementById("stage").value;
+const leaf = document.getElementById("leaf").value;
+const growth = document.getElementById("growth").value;
+const work = document.getElementById("work").value;
+const memo = document.getElementById("memo").value;
+
+const date = new Date().toLocaleDateString("ja-JP");
+
+const article = `${title}
+
+投稿日：${date}
+
+本日はねぎの${work}を行いました。
+
+現在の生育ステージは「${stage}」です。観察したところ、葉色は「${leaf}」で、生育評価は「${growth}」でした。全体的に大きな異常は見られず、順調に成長している様子が確認できました。
+
+品種改良では日々の小さな変化を記録することが重要です。今回の観察でも個体ごとの違いが少しずつ見え始めており、今後の成長が楽しみです。
+
+【今日の気づき】
+${memo || "特に大きな変化はありませんでした。"}
+
+これからも継続して観察を行い、より優れた特徴を持つ個体の選抜につなげていきたいと思います。`;
+
+document.getElementById("result").textContent = article;
+
+}
+
+</script>
+
+</body>
+</html>
