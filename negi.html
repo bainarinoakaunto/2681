@@ -6,36 +6,142 @@
 
 <title>ねぎ品種改良プロジェクト</title>
 
-<style>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
+<style>
+/* ==================
+フリップクロック
+================== */
+
+.flip-clock{
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
+margin-top:30px;
+}
+
+.flip-unit{
+text-align:center;
+}
+
+.flip-card{
+
+width:130px;
+height:150px;
+
+background:white;
+
+border-radius:22px;
+
+box-shadow:
+0 15px 40px rgba(0,0,0,.08);
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+overflow:hidden;
+
+perspective:1000px;
+}
+
+.flip-number{
+
+font-size:3.2rem;
+font-weight:900;
+
+color:#111;
+}
+
+.flip-label{
+
+margin-top:12px;
+
+font-size:.95rem;
+
+font-weight:600;
+
+color:#666;
+}
+
+.flip-animate{
+
+animation:
+flipCard .7s ease;
+}
+
+@keyframes flipCard{
+
+0%{
+transform:rotateX(0deg);
+}
+
+50%{
+transform:rotateX(90deg);
+}
+
+100%{
+transform:rotateX(0deg);
+}
+
+}
+
+/* スマホ */
+
+@media(max-width:768px){
+
+.flip-card{
+width:85px;
+height:100px;
+}
+
+.flip-number{
+font-size:2rem;
+}
+
+}
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
 }
 
+html{
+scroll-behavior:smooth;
+}
+
 body{
-font-family:"Yu Gothic",sans-serif;
-background:#08120a;
-color:white;
+font-family:'Noto Sans JP',sans-serif;
+background:#f7f8fa;
+color:#111;
 overflow-x:hidden;
 }
 
-/* ヘッダー */
+/* ==================
+ヘッダー
+================== */
 
 header{
 position:fixed;
 top:0;
 left:0;
 width:100%;
-height:80px;
-background:rgba(0,0,0,.7);
-backdrop-filter:blur(15px);
+height:85px;
+
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:0 40px;
+
+padding:0 50px;
+
+background:rgba(255,255,255,.88);
+backdrop-filter:blur(20px);
+
+border-bottom:1px solid rgba(0,0,0,.05);
+
 z-index:9999;
+transition:.3s;
 }
 
 .logo{
@@ -45,184 +151,451 @@ gap:15px;
 }
 
 .logo-icon{
-width:50px;
-height:50px;
-border-radius:15px;
-background:linear-gradient(
+
+width:55px;
+height:55px;
+
+border-radius:18px;
+
+background:
+linear-gradient(
 135deg,
-#4cff88,
-#1fa84c
+#ffffff,
+#dcdcdc
 );
+
+border:1px solid #d8d8d8;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+font-size:24px;
+}
+
+.logo-text h2{
+font-size:1.1rem;
+font-weight:700;
+}
+
+.logo-text p{
+font-size:.75rem;
+color:#777;
 }
 
 nav{
 display:flex;
-gap:30px;
+gap:35px;
 }
 
 nav a{
-color:white;
 text-decoration:none;
+color:#111;
+font-weight:600;
+transition:.3s;
 }
 
 nav a:hover{
-color:#69ff9d;
+opacity:.5;
 }
 
-/* トップ */
+.menu-btn{
+display:none;
+font-size:32px;
+cursor:pointer;
+}
+
+/* ==================
+Hero
+================== */
 
 .hero{
+
 position:relative;
+
 height:100vh;
-overflow:hidden;
+
 display:flex;
 align-items:center;
+
 padding:0 8%;
+
+overflow:hidden;
 }
 
-/* スライド背景 */
+/* 背景スライド */
 
 .slider{
 position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
+inset:0;
 z-index:-3;
 }
 
 .slide{
+
 position:absolute;
+
 width:100%;
 height:100%;
+
 object-fit:cover;
+
 opacity:0;
-transition:opacity 2s;
+
+transition:
+opacity 2s ease;
 }
 
 .slide.active{
 opacity:1;
 }
 
-/* 黒オーバーレイ */
+/* オーバーレイ */
 
 .hero-overlay{
+
 position:absolute;
 inset:0;
+
 background:
+
 linear-gradient(
-rgba(0,0,0,.45),
-rgba(0,0,0,.8)
+90deg,
+rgba(255,255,255,.95),
+rgba(255,255,255,.55)
 );
+
 z-index:-2;
 }
 
+/* ヒーロー本文 */
+
 .hero-content{
-max-width:800px;
+max-width:850px;
 }
 
 .badge{
+
 display:inline-block;
-padding:10px 18px;
-border-radius:50px;
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.15);
-margin-bottom:20px;
+
+padding:12px 20px;
+
+background:white;
+
+border:1px solid rgba(0,0,0,.08);
+
+border-radius:999px;
+
+margin-bottom:25px;
+
+font-size:.85rem;
+
+font-weight:600;
 }
 
-.hero h1{
-font-size:clamp(3rem,8vw,6rem);
-margin-bottom:20px;
+/* タイトル */
+
+.hero-title{
+
+font-size:
+clamp(
+3.5rem,
+8vw,
+7rem
+);
+
+font-weight:900;
+
+line-height:1.05;
+
+margin-bottom:25px;
 }
 
-.glow{
-color:#69ff9d;
+.hero-title span{
+
+display:inline-block;
+
+opacity:0;
+
+transform:
+translateY(60px);
+
+animation:
+letterIn .8s forwards;
+}
+
+.hero-title span:nth-child(1){animation-delay:.05s;}
+.hero-title span:nth-child(2){animation-delay:.10s;}
+.hero-title span:nth-child(3){animation-delay:.15s;}
+.hero-title span:nth-child(4){animation-delay:.20s;}
+.hero-title span:nth-child(5){animation-delay:.25s;}
+.hero-title span:nth-child(6){animation-delay:.30s;}
+.hero-title span:nth-child(7){animation-delay:.35s;}
+
+@keyframes letterIn{
+
+to{
+opacity:1;
+transform:none;
+}
+
 }
 
 .hero p{
-font-size:1.2rem;
-line-height:1.8;
-color:#d9e8d9;
+
+font-size:1.15rem;
+
+line-height:2;
+
+color:#555;
+
+max-width:700px;
 }
 
-.btn{
-display:inline-block;
-margin-top:30px;
-padding:16px 35px;
-background:#44dd77;
-border-radius:15px;
-text-decoration:none;
+/* ボタン */
+
+.hero-buttons{
+
+display:flex;
+gap:15px;
+
+margin-top:40px;
+
+flex-wrap:wrap;
+}
+
+.btn-primary{
+
+background:#111;
+
 color:white;
+
+text-decoration:none;
+
+padding:18px 34px;
+
+border-radius:16px;
+
 font-weight:bold;
+
+transition:.3s;
 }
 
-/* 統計 */
-
-.stats{
-display:grid;
-grid-template-columns:
-repeat(auto-fit,minmax(250px,1fr));
-gap:25px;
-padding:0 8%;
-margin-top:-80px;
+.btn-primary:hover{
+transform:translateY(-4px);
 }
 
-.stat{
-background:rgba(10,25,10,.9);
-border-radius:25px;
-padding:35px;
-text-align:center;
+.btn-secondary{
+
+background:white;
+
+color:#111;
+
+text-decoration:none;
+
+padding:18px 34px;
+
+border-radius:16px;
+
+border:1px solid #ddd;
+
+font-weight:bold;
+
+transition:.3s;
 }
 
-.stat h2{
-font-size:3rem;
-color:#69ff9d;
+.btn-secondary:hover{
+transform:translateY(-4px);
 }
 
-.scroll{
+/* スクロール */
+
+.scroll-indicator{
+
 position:absolute;
-bottom:30px;
+
+bottom:35px;
 left:50%;
-transform:translateX(-50%);
-animation:updown 2s infinite;
+
+transform:
+translateX(-50%);
+
+font-size:.8rem;
+
+letter-spacing:2px;
+
+color:#666;
+
+animation:
+float 2s infinite;
 }
 
-@keyframes updown{
+@keyframes float{
 
 0%{
-transform:translate(-50%,0);
+transform:
+translate(-50%,0);
 }
 
 50%{
-transform:translate(-50%,10px);
+transform:
+translate(-50%,10px);
 }
 
 100%{
-transform:translate(-50%,0);
+transform:
+translate(-50%,0);
 }
 
 }
 
-section{
-padding:90px 8%;
-}
+/* ==================
+実績カード
+================== */
 
-.card{
-background:#101c12;
-border-radius:25px;
-padding:30px;
-}
+.stats{
 
-.grid{
+position:relative;
+
+margin-top:-90px;
+
+padding:0 8%;
+
 display:grid;
+
 grid-template-columns:
-repeat(auto-fit,minmax(280px,1fr));
+repeat(
+auto-fit,
+minmax(280px,1fr)
+);
+
 gap:25px;
 }
 
-.section-title{
-font-size:3rem;
-margin-bottom:25px;
+.stat{
+
+background:white;
+
+padding:35px;
+
+border-radius:28px;
+
+box-shadow:
+0 20px 45px
+rgba(0,0,0,.07);
+
+text-align:center;
+
+opacity:0;
+transform:translateY(60px);
+}
+
+.stat-number{
+
+font-size:3.5rem;
+font-weight:800;
+}
+
+.stat-label{
+
+margin-top:10px;
+
+color:#777;
+}
+
+/* ==================
+スクロールアニメーション
+================== */
+
+.fade-up{
+opacity:0;
+transform:translateY(80px);
+transition:1s;
+}
+
+.fade-left{
+opacity:0;
+transform:translateX(-80px);
+transition:1s;
+}
+
+.fade-right{
+opacity:0;
+transform:translateX(80px);
+transition:1s;
+}
+
+.zoom-in{
+opacity:0;
+transform:scale(.85);
+transition:1s;
+}
+
+.show{
+opacity:1 !important;
+transform:none !important;
+}
+
+/* ==================
+スマホ
+================== */
+
+@media(max-width:768px){
+
+header{
+padding:0 20px;
+}
+
+.menu-btn{
+display:block;
+}
+
+nav{
+
+position:fixed;
+
+top:85px;
+right:-100%;
+
+width:260px;
+height:100vh;
+
+background:white;
+
+display:flex;
+flex-direction:column;
+
+align-items:center;
+
+padding-top:40px;
+
+gap:25px;
+
+transition:.4s;
+
+box-shadow:
+-10px 0 30px
+rgba(0,0,0,.08);
+}
+
+nav.active{
+right:0;
+}
+
+.hero{
+
+justify-content:center;
+text-align:center;
+}
+
+.hero-buttons{
+justify-content:center;
+}
+
+.hero p{
+font-size:1rem;
+}
+
 }
 
 </style>
@@ -234,21 +607,37 @@ margin-bottom:25px;
 
 <div class="logo">
 
-<div class="logo-icon"></div>
+<div class="logo-icon">
+🌱
+</div>
 
-<div>
-<h2>品種改良</h2>
-<small>個人育種プロジェクト</small>
+<div class="logo-text">
+
+<h2>
+ねぎ品種改良プロジェクト
+</h2>
+
+<p>
+NEGI BREEDING PROJECT
+</p>
+
 </div>
 
 </div>
 
-<nav>
+<div class="menu-btn"
+onclick="toggleMenu()">
 
-<a href="#project">プロジェクト</a>
+☰
+
+</div>
+
+<nav id="menu">
+
+<a href="#about">概要</a>
 <a href="#target">育種目標</a>
-<a href="#roadmap">計画</a>
-<a href="#update">更新情報</a>
+<a href="#roadmap">ロードマップ</a>
+<a href="#updates">更新情報</a>
 
 </nav>
 
@@ -271,63 +660,136 @@ margin-bottom:25px;
 <div class="hero-content">
 
 <div class="badge">
-個人品種改良プロジェクト
+
+個人育種研究プロジェクト
+
 </div>
 
-<h1>
+<h1 class="hero-title">
 
-ねぎ
-<span class="glow">
-品種改良
-</span>
-
-プロジェクト
+<span>未</span>
+<span>来</span>
+<span>の</span>
+<span>ね</span>
+<span>ぎ</span>
+<span>を</span>
+<span>創</span>
+る
 
 </h1>
 
 <p>
 
-特設ページ
+収量・風味・耐病性・育てやすさを追求し、
+理想のねぎを目指して継続的な観察と選抜を行っています。
 
 </p>
 
-<a
-href="https://negikairyou.blog.jp/"
-class="btn">
+<div class="hero-buttons">
 
-ブログを見る
+<a href="https://negikairyou.blog.jp/" class="btn-primary">
+研究記録を見る(ブログ)
+</a>
 
+<a href="#about" class="btn-secondary">
+プロジェクト概要
 </a>
 
 </div>
 
-<div class="scroll">
-▼ スクロール
+</div>
+
+<div class="scroll-indicator">
+
+SCROLL ▼
+
 </div>
 
 </section>
 
 <div class="stats">
 
-<div class="stat">
-<h2>28</h2>
-<p>育成株数</p>
+<div class="stat zoom-in">
+
+<div class="stat-number"
+data-target="22">
+
+0
+
 </div>
 
-<div class="stat">
-<h2>6</h2>
-<p>選抜候補</p>
-</div>
-
-<div class="stat">
-<div id="projectTime">
-読み込み中...
-</div>
-<p>プロジェクト開始からの経過時間</p>
+<div class="stat-label">
+育成株数
 </div>
 
 </div>
-<section id="project">
+
+
+</div>
+
+</div>
+
+<div class="stat zoom-in">
+
+<div class="stat-number"
+data-target="6">
+
+
+</div>
+
+<div class="stat-label">
+選抜候補
+</div>
+
+</div>
+
+</div>
+<section class="fade-up">
+
+<div style="padding:0 8% 100px;">
+
+<h2 class="section-title">
+プロジェクト開始からの経過時間
+</h2>
+
+<div class="flip-clock">
+
+<div class="flip-unit">
+<div class="flip-card">
+<div id="days" class="flip-number">0</div>
+</div>
+<div class="flip-label">日</div>
+</div>
+
+<div class="flip-unit">
+<div class="flip-card">
+<div id="hours" class="flip-number">00</div>
+</div>
+<div class="flip-label">時間</div>
+</div>
+
+<div class="flip-unit">
+<div class="flip-card">
+<div id="minutes" class="flip-number">00</div>
+</div>
+<div class="flip-label">分</div>
+</div>
+
+<div class="flip-unit">
+<div class="flip-card">
+<div id="seconds" class="flip-number">00</div>
+</div>
+<div class="flip-label">秒</div>
+</div>
+
+</div>
+</div>
+
+</section>
+
+<section id="about" class="fade-up">
+
+<div style="padding:100px 8%;">
 
 <h2 class="section-title">
 プロジェクト概要
@@ -335,19 +797,29 @@ class="btn">
 
 <div class="card">
 
-<p>
+<p style="line-height:2;color:#555;">
 
-個人でねぎの改良を始めたきっかけは、「異なる品種の良い特徴を組み合わせた、自分だけのねぎを作りたい」と考えたことでした。ねぎをしらべると、品種によって生育の良さや耐病性、太さ、食味、香りなどにそれぞれ特徴があることを知り、「これらの長所を一つにまとめることができないだろうか」と興味を持つようになりました。
-個人での品種改良は設備や規模の面で制約もありますが、そのかわりに、自分の理想とするねぎを追求できる自由さがあります。このブログでは、交配の記録や選抜の過程、育成中の系統の特徴、そして成功や失敗の経験を記録しながら、理想のねぎづくりへの挑戦を記録していきたいと思います。
+本プロジェクトは、九条ねぎと小ねぎを中心に、
+理想的なねぎの育成を目指す個人育種研究です。
 
+生育速度、葉色、収量、耐暑性、耐寒性、
+病害抵抗性などを継続的に観察し、
+優良個体の選抜を行っています。
+
+栽培記録や観察結果はブログで公開し、
+長期的な品種改良へ取り組んでいます。
 
 </p>
 
 </div>
 
+</div>
+
 </section>
 
-<section id="target">
+<section id="target" class="fade-up">
+
+<div style="padding:0 8% 100px;">
 
 <h2 class="section-title">
 育種目標
@@ -355,71 +827,75 @@ class="btn">
 
 <div class="grid">
 
-<div class="card">
-<h3>🌱 成長速度</h3>
-<p>
-発芽率が高く、
-美味しく成長が早い系統
-</p>
+<div class="card fade-left">
+<h3>🌱 生育速度</h3>
+<p>発芽率が高く、成長の早い系統を目指します。</p>
 </div>
 
-<div class="card">
+<div class="card fade-right">
 <h3>🍃 香り</h3>
-<p>
-豊かな風味
-</p>
+<p>九条ねぎ由来の豊かな風味を追求します。</p>
 </div>
 
-<div class="card">
+<div class="card fade-left">
 <h3>📈 収量</h3>
-<p>
-家庭菜園でも
-多収穫を目指す
-</p>
+<p>家庭菜園でも多収穫が期待できる品種。</p>
 </div>
 
-<div class="card">
-<h3>🛡 病害抵抗性</h3>
-<p>
-病気に強く
-安定した生育
-</p>
-</div>
-
-<div class="card">
+<div class="card fade-right">
 <h3>☀ 耐暑性</h3>
-<p>
-夏場でも元気に育つ
-</p>
+<p>高温環境でも安定して育つこと。</p>
 </div>
 
-<div class="card">
+<div class="card fade-left">
 <h3>❄ 耐寒性</h3>
-<p>
-冬越ししやすい
-強い個体
-</p>
+<p>冬越ししやすい強健な系統。</p>
+</div>
+
+<div class="card fade-right">
+<h3>🛡 病害抵抗性</h3>
+<p>病気に強く育てやすいこと。</p>
+</div>
+
 </div>
 
 </div>
 
 </section>
 
-<section id="roadmap">
+<section id="roadmap" class="fade-up">
+
+<div style="padding:0 8% 100px;">
 
 <h2 class="section-title">
-育種ロードマップ
+F1世代のロードマップ
 </h2>
 
 <div class="card">
 
-<h3>ロードマップは非公開です。</h3>
+<div style="border-left:4px solid #111;padding-left:25px;line-height:2.2;">
+
+<b>2026年</b><br>
+交配・採種開始
+
+<br><br>
+
+<b>2027年</b><br>
+F1世代栽培・評価
+
+<br><br>
+
+</div>
+
+</div>
 
 </div>
 
 </section>
 
-<section id="update">
+<section id="updates" class="fade-up">
+
+<div style="padding:0 8% 100px;">
 
 <h2 class="section-title">
 最新更新情報
@@ -427,30 +903,50 @@ class="btn">
 
 <div class="card">
 
-<b>2026.06.04</b><br>
+<b>2026.06.04</b>
+<br>
 ホームページ公開
 
-<br><br>
+<hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
 
-<b>2026.06.01</b><br>
+<b>2026.06.01</b>
+<br>
 観察記録更新
 
-<br><br>
+<hr style="margin:20px 0;border:none;border-top:1px solid #eee;">
 
-<b>2026.05.25</b><br>
-育種目標公開
+<b>2026.05.25</b>
+<br>
+育種目標
+
+</div>
 
 </div>
 
 </section>
 
+
 <footer>
 
-© 2026 ryo15542
+<div style="padding:60px 20px;">
+
+
+
+</div>
 
 </footer>
 
 <script>
+
+/* ハンバーガーメニュー */
+
+function toggleMenu(){
+
+document
+.getElementById("menu")
+.classList.toggle("active");
+
+}
 
 /* 背景スライド */
 
@@ -465,75 +961,157 @@ slides[current]
 .classList.remove("active");
 
 current =
-(current + 1)
-% slides.length;
+(current+1)%slides.length;
 
 slides[current]
 .classList.add("active");
 
 },5000);
 
+/* スクロールアニメーション */
 
-/* プロジェクト経過時間 */
+const observer =
+new IntersectionObserver(entries=>{
 
-const startDate =
-new Date("2026-05-04T00:00:00");
+entries.forEach(entry=>{
 
-function updateProjectTime(){
+if(entry.isIntersecting){
 
-let diff =
-Math.floor(
-(new Date() - startDate)
-/ 1000
-);
-
-const days =
-Math.floor(diff / 86400);
-
-diff %= 86400;
-
-const hours =
-Math.floor(diff / 3600);
-
-diff %= 3600;
-
-const minutes =
-Math.floor(diff / 60);
-
-const seconds =
-diff % 60;
-
-document.getElementById(
-"projectTime"
-).innerHTML =
-
-`
-<div style="
-font-size:2.5rem;
-font-weight:bold;
-color:#69ff9d;
-">
-${days}日
-</div>
-
-<div style="
-margin-top:10px;
-">
-${hours}時間
-${minutes}分
-${seconds}秒
-</div>
-`;
+entry.target.classList.add("show");
 
 }
 
-updateProjectTime();
+});
 
-setInterval(
-updateProjectTime,
-1000
+},{
+threshold:0.15
+});
+
+document
+.querySelectorAll(
+".fade-up,.fade-left,.fade-right,.zoom-in"
+)
+.forEach(el=>{
+
+observer.observe(el);
+
+});
+
+/* 数値カウントアップ */
+
+document
+.querySelectorAll(".stat-number")
+.forEach(counter=>{
+
+const target =
++counter.dataset.target;
+
+let count = 0;
+
+const update = ()=>{
+
+count +=
+Math.ceil(target/50);
+
+if(count < target){
+
+counter.textContent =
+count;
+
+requestAnimationFrame(update);
+
+}else{
+
+counter.textContent =
+target;
+
+}
+
+};
+
+update();
+
+});
+
+/* 経過時間 */
+
+const startDate =
+new Date("2026-05-04T17:15:35");
+
+const oldValues = {};
+
+function updateValue(id,value){
+
+const el =
+document.getElementById(id);
+
+if(oldValues[id] != value){
+
+el.classList.remove("flip-animate");
+
+void el.offsetWidth;
+
+el.classList.add("flip-animate");
+
+el.textContent = value;
+
+oldValues[id] = value;
+
+}
+
+}
+
+function updateClock(){
+
+let diff =
+Math.floor(
+(new Date()-startDate)/1000
 );
 
+const days =
+Math.floor(diff/86400);
+
+diff%=86400;
+
+const hours =
+Math.floor(diff/3600);
+
+diff%=3600;
+
+const minutes =
+Math.floor(diff/60);
+
+const seconds =
+diff%60;
+
+updateValue(
+"days",
+days
+);
+
+updateValue(
+"hours",
+String(hours).padStart(2,"0")
+);
+
+updateValue(
+"minutes",
+String(minutes).padStart(2,"0")
+);
+
+updateValue(
+"seconds",
+String(seconds).padStart(2,"0")
+);
+
+}
+
+updateClock();
+
+setInterval(
+updateClock,
+1000
+);
 </script>
 
 </body>
