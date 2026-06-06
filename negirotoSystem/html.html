@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEGI LOT SYSTEM ERROR</title>
+
+<style>
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#ffebee;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.card{
+    width:92%;
+    max-width:450px;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    overflow:hidden;
+}
+
+/* エラーヘッダー */
+.header{
+    background:#b71c1c;
+    color:white;
+    padding:14px;
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* 本文 */
+.content{
+    padding:20px;
+}
+
+.status{
+    font-size:14px;
+    color:#c62828;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+p{
+    font-size:13px;
+    color:#444;
+    line-height:1.6;
+}
+
+/* 理由ボックス */
+.box{
+    margin-top:15px;
+    background:#fff3e0;
+    border-left:5px solid #ff9800;
+    padding:10px;
+    border-radius:8px;
+    font-size:13px;
+}
+
+/* ボタン */
+button{
+    width:100%;
+    margin-top:18px;
+    padding:15px;
+    font-size:16px;
+    background:#2e7d32;
+    color:white;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(0.98);
+}
+
+/* システムタグ */
+.tag{
+    margin-top:10px;
+    font-size:11px;
+    color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="header">
+        ❌ NEGI LOT SYSTEM｜ERROR 404
+    </div>
+
+    <div class="content">
+
+        <div class="status">LOT NOT FOUND</div>
+
+        <p>
+            指定されたロット番号のデータは存在しません。<br>
+            システム内で一致するファイルが見つかりませんでした。
+        </p>
+
+        <div class="box">
+            <b>可能性のある原因</b><br>
+            ・ロット番号の入力ミス<br>
+            ・データ未登録<br>
+            ・削除済みロット<br>
+            ・番号形式の違い
+        </div>
+
+        <button onclick="history.back()">← BACK TO SEARCH</button>
+
+        <div class="tag">SYSTEM MODE: ERROR HANDLING</div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
