@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ねぎロット管理システム</title>
+
+<style>
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#e8f5e9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+/* 全体カード */
+.card{
+    width:92%;
+    max-width:450px;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    overflow:hidden;
+}
+
+/* ヘッダー（システム感） */
+.header{
+    background:#1b5e20;
+    color:white;
+    padding:14px;
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* 本体 */
+.content{
+    padding:20px;
+    text-align:center;
+}
+
+label{
+    font-size:13px;
+    color:#555;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    font-size:16px;
+    margin-top:10px;
+    border:2px solid #c8e6c9;
+    border-radius:12px;
+    box-sizing:border-box;
+}
+
+input:focus{
+    border-color:#2e7d32;
+    outline:none;
+}
+
+/* ボタン */
+button{
+    width:100%;
+    margin-top:15px;
+    padding:15px;
+    font-size:16px;
+    background:#2e7d32;
+    color:white;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(0.98);
+}
+
+/* システムタグ */
+.tag{
+    font-size:11px;
+    color:#777;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="header">
+        🌱 NEGI LOT SYSTEM｜検索
+    </div>
+
+    <div class="content">
+
+        <label>ロット番号を入力してください</label>
+        <input id="lot" placeholder="例：12345">
+
+        <button onclick="go()">SEARCH</button>
+
+        <div class="tag">SYSTEM MODE: ACTIVE</div>
+
+    </div>
+
+</div>
+
+<script>
+function go(){
+    let lot = document.getElementById("lot").value.trim();
+
+    if(!lot){
+        alert("ロット番号を入力してください");
+        return;
+    }
+
+    lot = lot.replace(/[^a-zA-Z0-9_-]/g,"");
+
+    window.location.href = lot + ".html";
+}
+</script>
+
+</body>
+</html>
