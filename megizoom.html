@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ねぎ品種改良発表 オンライン会議誘導システム｜バイナリテックラボ</title>
+
+<style>
+:root{
+    --primary:#0f172a;
+    --secondary:#2563eb;
+    --bg:#f8fafc;
+    --card:#ffffff;
+    --text:#1e293b;
+    --border:#e2e8f0;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+header{
+    background:var(--primary);
+    color:white;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+
+.logo{
+    font-size:2rem;
+    font-weight:700;
+    letter-spacing:2px;
+}
+
+.sub{
+    margin-top:8px;
+    opacity:.8;
+}
+
+.container{
+    max-width:1000px;
+    margin:30px auto;
+    padding:0 20px;
+}
+
+.status-card{
+    background:white;
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:25px;
+    border:1px solid var(--border);
+}
+
+.status-title{
+    font-size:1.1rem;
+    font-weight:bold;
+}
+
+details{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    margin-bottom:16px;
+    overflow:hidden;
+}
+
+summary{
+    cursor:pointer;
+    list-style:none;
+    padding:20px;
+    font-size:1rem;
+    font-weight:bold;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+summary::-webkit-details-marker{
+    display:none;
+}
+
+summary::after{
+    content:"＋";
+    font-size:1.4rem;
+}
+
+details[open] summary::after{
+    content:"－";
+}
+
+.content{
+    border-top:1px solid var(--border);
+    padding:20px;
+}
+
+.label{
+    font-size:.85rem;
+    color:#64748b;
+    margin-top:12px;
+}
+
+.value{
+    font-weight:bold;
+    margin-top:4px;
+}
+
+.join-btn{
+    display:inline-block;
+    margin-top:18px;
+    background:var(--secondary);
+    color:white;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.join-btn:hover{
+    opacity:.9;
+}
+
+.badge{
+    background:#dbeafe;
+    color:#1d4ed8;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.8rem;
+}
+
+footer{
+    text-align:center;
+    padding:30px;
+    color:#64748b;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">NEGI RESEARCH PORTAL</div>
+    <div class="sub">
+        ねぎ品種改良発表 オンライン会議誘導システム
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="status-card">
+        <div class="status-title">
+            開催予定の会議
+        </div>
+        <div id="meetingCount">読込中...</div>
+    </div>
+
+    <div id="meetings"></div>
+
+</div>
+
+<footer>
+© 2026 Negi Research Portal
+</footer>
+
+<script>
+const meetings = [
+{
+    date:"2026-06-26",
+    title:"ねぎ品種改良発表2026-06-26.20:30〜",
+    meetingId:"823 6903 0809",
+    password:"6z4nd5",
+    zoom:"https://us05web.zoom.us/j/82369030809?pwd=fXdocGsGCy4Cn4nBabfsCuAKXxZA7b.1"
+},
+{
+    date:"2026-06-27",
+    title:"ねぎ品種改良発表②20:30〜",
+    meetingId:"812 0984 6435",
+    password:"6bAReQ",
+    zoom:"https://us05web.zoom.us/j/81209846435?pwd=akaCpzD97j4FvuayHVH9CUbBsenW9F.1"
+},
+{
+    date:"2026-06-28",
+    title:"最終発表会20:30〜",
+    meetingId:"869 9293 7976",
+    password:"3B7107",
+    zoom:"https://us05web.zoom.us/j/86992937976?pwd=uLbQ8ZSXXU3SI6nPaNeuKICsmBVFm2.1"
+}
+];
+
+const container = document.getElementById("meetings");
+
+document.getElementById("meetingCount").textContent =
+`${meetings.length}件`;
+
+meetings.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+meetings.forEach(meeting=>{
+
+container.innerHTML += `
+<details>
+
+<summary>
+    <span>${meeting.date}</span>
+    <span class="badge">zoom情報（こちらをタップするとご覧いただけます）</span>
+</summary>
+
+<div class="content">
+
+    <h3>${meeting.title}</h3>
+
+    <div class="label">Meeting ID</div>
+    <div class="value">${meeting.meetingId}</div>
+
+    <div class="label">Passcode</div>
+    <div class="value">${meeting.password}</div>
+
+    <a class="join-btn"
+       href="${meeting.zoom}"
+       target="_blank">
+       Zoomに参加
+    </a>
+
+</div>
+
+</details>
+`;
+});
+</script>
+
+</body>
+</html>
+```
