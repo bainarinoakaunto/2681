@@ -46,8 +46,6 @@ header{
     opacity:.8;
 }
 
-/* ===== レイアウト ===== */
-
 .main-layout{
     max-width:1400px;
     margin:30px auto;
@@ -75,7 +73,7 @@ header{
 }
 
 details{
-    background:var(--card);
+    background:#fff;
     border:1px solid var(--border);
     border-radius:14px;
     margin-bottom:16px;
@@ -120,16 +118,20 @@ details[open] summary::after{
     font-weight:bold;
     margin-top:4px;
 }
-
 .join-btn{
     display:inline-block;
     margin-top:18px;
-    background:#2563eb;
+    background:var(--secondary);
     color:#fff;
     text-decoration:none;
     padding:12px 22px;
     border-radius:10px;
     font-weight:bold;
+    transition:.2s;
+}
+
+.join-btn:hover{
+    background:#1d4ed8;
 }
 
 .badge{
@@ -140,7 +142,7 @@ details[open] summary::after{
     font-size:13px;
 }
 
-/* ===== お知らせ ===== */
+/* ===== 右側 お知らせ ===== */
 
 .notice-panel{
     background:#fff;
@@ -158,13 +160,13 @@ details[open] summary::after{
     color:#fff;
     text-align:center;
     padding:15px;
-    font-weight:bold;
     font-size:18px;
+    font-weight:bold;
 }
 
 .notice-panel iframe{
     width:100%;
-    height:calc(100% - 50px);
+    height:calc(100% - 52px);
     border:none;
 }
 
@@ -177,18 +179,19 @@ footer{
 @media(max-width:1000px){
 
 .main-layout{
-grid-template-columns:1fr;
+    grid-template-columns:1fr;
 }
 
 .notice-panel{
-height:500px;
-position:static;
+    position:static;
+    height:500px;
 }
 
 }
+
 </style>
-
 </head>
+
 <body>
 
 <header>
@@ -222,7 +225,9 @@ NEGI RESEARCH PORTAL
 
 </div>
 
+<!-- ===================== -->
 <!-- 右側 お知らせ -->
+<!-- ===================== -->
 
 <aside class="notice-panel">
 
@@ -240,47 +245,47 @@ NEGI RESEARCH PORTAL
 </div>
 
 <footer>
-© 2026 Negi Research Portal
+© 2026 NEGI RESEARCH PORTAL
 </footer>
 
 <script>
 
 const meetings = [
-
 {
-    date:"2026-06-25",
-    title:"ねぎ品種改良発表①",
-    meetingId:"123 456 789",
-    password:"NEGI01",
-    zoom:"https://zoom.us/"
+    date:"2026-06-26",
+    title:"ねぎ品種改良発表2026-06-26.20:30〜",
+    meetingId:"823 6903 0809",
+    password:"6z4nd5",
+    zoom:"https://us05web.zoom.us/j/82369030809?pwd=fXdocGsGCy4Cn4nBabfsCuAKXxZA7b.1"
 },
-
 {
-    date:"2026-07-01",
-    title:"ねぎ品種改良発表②",
-    meetingId:"234 567 890",
-    password:"NEGI02",
-    zoom:"https://zoom.us/"
+    date:"2026-06-27",
+    title:"ねぎ品種改良発表②20:30〜",
+    meetingId:"812 0984 6435",
+    password:"6bAReQ",
+    zoom:"https://us05web.zoom.us/j/81209846435?pwd=akaCpzD97j4FvuayHVH9CUbBsenW9F.1"
 },
-
 {
-    date:"2026-07-15",
-    title:"最終発表会",
-    meetingId:"345 678 901",
-    password:"NEGI03",
-    zoom:"https://zoom.us/"
-};
+    date:"2026-06-28",
+    title:"最終発表会20:30〜",
+    meetingId:"869 9293 7976",
+    password:"3B7107",
+    zoom:"https://us05web.zoom.us/j/86992937976?pwd=uLbQ8ZSXXU3SI6nPaNeuKICsmBVFm2.1"
+}
+];
 
-const container=document.getElementById("meetings");
 
-document.getElementById("meetingCount").textContent=
+const container = document.getElementById("meetings");
+
+document.getElementById("meetingCount").textContent =
 `${meetings.length}件`;
 
 meetings.sort((a,b)=>new Date(a.date)-new Date(b.date));
 
 meetings.forEach(meeting=>{
 
-container.innerHTML+=`
+container.innerHTML += `
+
 <details>
 
 <summary>
@@ -313,68 +318,24 @@ Passcode
 ${meeting.password}
 </div>
 
-<a class="join-btn"
+<a
+class="join-btn"
 href="${meeting.zoom}"
 target="_blank">
 
 Zoomに参加
 
 </a>
-
 </div>
 
 </details>
+
 `;
 
 });
-// meetings配列の最後はこれ
-];
 
-const container = document.getElementById("meetings");
-
-document.getElementById("meetingCount").textContent =
-`${meetings.length}件`;
-
-meetings.sort((a,b)=>new Date(a.date)-new Date(b.date));
-
-meetings.forEach(meeting=>{
-
-container.innerHTML += `
-<details>
-
-<summary>
-
-<span>${meeting.date}</span>
-
-<span class="badge">
-会議情報
-</span>
-
-</summary>
-
-<div class="content">
-
-<h3>${meeting.title}</h3>
-
-<div class="label">Meeting ID</div>
-<div class="value">${meeting.meetingId}</div>
-
-<div class="label">Passcode</div>
-<div class="value">${meeting.password}</div>
-
-<a class="join-btn"
-href="${meeting.zoom}"
-target="_blank">
-Zoomに参加
-</a>
-
-</div>
-
-</details>
-`;
-
-});
 </script>
 
 </body>
+
 </html>
