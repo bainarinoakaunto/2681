@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,7 +29,7 @@ body{
 
 header{
     background:var(--primary);
-    color:white;
+    color:#fff;
     padding:30px;
     text-align:center;
     box-shadow:0 2px 10px rgba(0,0,0,.15);
@@ -47,14 +46,23 @@ header{
     opacity:.8;
 }
 
-.container{
-    max-width:1000px;
+/* ===== レイアウト ===== */
+
+.main-layout{
+    max-width:1400px;
     margin:30px auto;
     padding:0 20px;
+    display:grid;
+    grid-template-columns:1fr 360px;
+    gap:25px;
+}
+
+.container{
+    width:100%;
 }
 
 .status-card{
-    background:white;
+    background:#fff;
     border-radius:14px;
     padding:20px;
     margin-bottom:25px;
@@ -78,11 +86,10 @@ summary{
     cursor:pointer;
     list-style:none;
     padding:20px;
-    font-size:1rem;
-    font-weight:bold;
     display:flex;
     justify-content:space-between;
     align-items:center;
+    font-weight:bold;
 }
 
 summary::-webkit-details-marker{
@@ -91,7 +98,7 @@ summary::-webkit-details-marker{
 
 summary::after{
     content:"＋";
-    font-size:1.4rem;
+    font-size:22px;
 }
 
 details[open] summary::after{
@@ -104,8 +111,8 @@ details[open] summary::after{
 }
 
 .label{
-    font-size:.85rem;
     color:#64748b;
+    font-size:.9rem;
     margin-top:12px;
 }
 
@@ -117,24 +124,48 @@ details[open] summary::after{
 .join-btn{
     display:inline-block;
     margin-top:18px;
-    background:var(--secondary);
-    color:white;
+    background:#2563eb;
+    color:#fff;
     text-decoration:none;
-    padding:12px 20px;
+    padding:12px 22px;
     border-radius:10px;
     font-weight:bold;
-}
-
-.join-btn:hover{
-    opacity:.9;
 }
 
 .badge{
     background:#dbeafe;
     color:#1d4ed8;
-    padding:6px 10px;
+    padding:6px 12px;
     border-radius:999px;
-    font-size:.8rem;
+    font-size:13px;
+}
+
+/* ===== お知らせ ===== */
+
+.notice-panel{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+    height:700px;
+    position:sticky;
+    top:20px;
+    box-shadow:0 4px 15px rgba(0,0,0,.12);
+}
+
+.notice-header{
+    background:#dc2626;
+    color:#fff;
+    text-align:center;
+    padding:15px;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.notice-panel iframe{
+    width:100%;
+    height:calc(100% - 50px);
+    border:none;
 }
 
 footer{
@@ -142,27 +173,69 @@ footer{
     padding:30px;
     color:#64748b;
 }
+
+@media(max-width:1000px){
+
+.main-layout{
+grid-template-columns:1fr;
+}
+
+.notice-panel{
+height:500px;
+position:static;
+}
+
+}
 </style>
+
 </head>
 <body>
 
 <header>
-    <div class="logo">NEGI RESEARCH PORTAL</div>
-    <div class="sub">
-        ねぎ品種改良発表 オンライン会議システム
-    </div>
+
+<div class="logo">
+NEGI RESEARCH PORTAL
+</div>
+
+<div class="sub">
+ねぎ品種改良発表 オンライン会議システム
+</div>
+
 </header>
 
-<div class="container">
+<div class="main-layout">
 
-    <div class="status-card">
-        <div class="status-title">
-            開催予定の会議
-        </div>
-        <div id="meetingCount">読込中...</div>
+<div class="container">
+<div class="status-card">
+
+    <div class="status-title">
+        開催予定の会議
     </div>
 
-    <div id="meetings"></div>
+    <div id="meetingCount">
+        読込中...
+    </div>
+
+</div>
+
+<div id="meetings"></div>
+
+</div>
+
+<!-- 右側 お知らせ -->
+
+<aside class="notice-panel">
+
+    <div class="notice-header">
+        📢 お知らせ
+    </div>
+
+    <iframe
+        src="https://drive.google.com/file/d/1YfbpkuQp7Kimawx24LhKLY4IJGcvE0rK/preview"
+        allow="autoplay">
+    </iframe>
+
+</aside>
 
 </div>
 
@@ -171,7 +244,9 @@ footer{
 </footer>
 
 <script>
+
 const meetings = [
+
 {
     date:"2026-06-25",
     title:"ねぎ品種改良発表①",
@@ -179,6 +254,7 @@ const meetings = [
     password:"NEGI01",
     zoom:"https://zoom.us/"
 },
+
 {
     date:"2026-07-01",
     title:"ねぎ品種改良発表②",
@@ -186,13 +262,72 @@ const meetings = [
     password:"NEGI02",
     zoom:"https://zoom.us/"
 },
+
 {
     date:"2026-07-15",
     title:"最終発表会",
     meetingId:"345 678 901",
     password:"NEGI03",
     zoom:"https://zoom.us/"
-}
+};
+
+const container=document.getElementById("meetings");
+
+document.getElementById("meetingCount").textContent=
+`${meetings.length}件`;
+
+meetings.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+meetings.forEach(meeting=>{
+
+container.innerHTML+=`
+<details>
+
+<summary>
+
+<span>${meeting.date}</span>
+
+<span class="badge">
+会議情報
+</span>
+
+</summary>
+
+<div class="content">
+
+<h3>${meeting.title}</h3>
+
+<div class="label">
+Meeting ID
+</div>
+
+<div class="value">
+${meeting.meetingId}
+</div>
+
+<div class="label">
+Passcode
+</div>
+
+<div class="value">
+${meeting.password}
+</div>
+
+<a class="join-btn"
+href="${meeting.zoom}"
+target="_blank">
+
+Zoomに参加
+
+</a>
+
+</div>
+
+</details>
+`;
+
+});
+// meetings配列の最後はこれ
 ];
 
 const container = document.getElementById("meetings");
@@ -208,33 +343,38 @@ container.innerHTML += `
 <details>
 
 <summary>
-    <span>${meeting.date}</span>
-    <span class="badge">会議情報</span>
+
+<span>${meeting.date}</span>
+
+<span class="badge">
+会議情報
+</span>
+
 </summary>
 
 <div class="content">
 
-    <h3>${meeting.title}</h3>
+<h3>${meeting.title}</h3>
 
-    <div class="label">Meeting ID</div>
-    <div class="value">${meeting.meetingId}</div>
+<div class="label">Meeting ID</div>
+<div class="value">${meeting.meetingId}</div>
 
-    <div class="label">Passcode</div>
-    <div class="value">${meeting.password}</div>
+<div class="label">Passcode</div>
+<div class="value">${meeting.password}</div>
 
-    <a class="join-btn"
-       href="${meeting.zoom}"
-       target="_blank">
-       Zoomに参加
-    </a>
+<a class="join-btn"
+href="${meeting.zoom}"
+target="_blank">
+Zoomに参加
+</a>
 
 </div>
 
 </details>
 `;
+
 });
 </script>
 
 </body>
 </html>
-```
